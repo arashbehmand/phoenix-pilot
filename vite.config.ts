@@ -9,7 +9,7 @@ export default defineConfig({
     crx({ manifest }),
   ],
   build: {
-    outDir: 'lipilot_ready_for_chrome',
+    outDir: 'phoenix_pilot_ready_for_chrome',
     rollupOptions: {
       input: {
         options: 'options.html',
@@ -25,4 +25,3 @@ export default defineConfig({
     },
   },
 })
-

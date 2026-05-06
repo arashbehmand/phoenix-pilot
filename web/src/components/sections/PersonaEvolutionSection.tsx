@@ -37,9 +37,9 @@ export function PersonaEvolutionSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-lipilot-cyan/30 mb-6">
-            <Brain className="w-5 h-5 text-lipilot-cyan" />
-            <span className="text-sm font-medium text-lipilot-cyan">AI Learning Engine</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-phoenix-cyan/30 mb-6">
+            <Brain className="w-5 h-5 text-phoenix-cyan" />
+            <span className="text-sm font-medium text-phoenix-cyan">AI Learning Engine</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Watch Your <span className="text-gradient">Persona Evolve</span>
@@ -63,14 +63,14 @@ export function PersonaEvolutionSection() {
                 onClick={() => setSelectedStage(index)}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
                   selectedStage === index
-                    ? 'glass border-lipilot-cyan/50 bg-lipilot-cyan/10'
+                    ? 'glass border-phoenix-cyan/50 bg-phoenix-cyan/10'
                     : 'glass border-white/10 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold text-white">{stage.time}</span>
                   {selectedStage === index && (
-                    <Sparkles className="w-5 h-5 text-lipilot-cyan" />
+                    <Sparkles className="w-5 h-5 text-phoenix-cyan" />
                   )}
                 </div>
                 <p className="text-sm text-gray-400 line-clamp-2">{stage.persona}</p>
@@ -87,8 +87,8 @@ export function PersonaEvolutionSection() {
           >
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-5 h-5 text-lipilot-cyan" />
-                <span className="text-sm font-semibold text-lipilot-cyan">
+                <TrendingUp className="w-5 h-5 text-phoenix-cyan" />
+                <span className="text-sm font-semibold text-phoenix-cyan">
                   Refined Persona
                 </span>
               </div>

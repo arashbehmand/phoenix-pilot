@@ -24,7 +24,7 @@ export function CookiePolicyPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-lipilot-cyan to-blue-500 mb-6 shadow-lg shadow-lipilot-cyan/25">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-phoenix-cyan to-blue-500 mb-6 shadow-lg shadow-phoenix-cyan/25">
             <Cookie className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">Cookie Policy</h1>
@@ -44,7 +44,7 @@ export function CookiePolicyPage() {
               Cookies are small text files that are placed on your device when you visit a website. They are widely used to make websites work more efficiently and provide information to website owners.
             </p>
             <p>
-              This Cookie Policy explains how LiPilot ("we," "our," or "us") uses cookies and similar technologies when you use our website and Chrome extension.
+              This Cookie Policy explains how Phoenix Pilot ("we," "our," or "us") uses cookies and similar technologies when you use our website and Chrome extension.
             </p>
           </section>
 
@@ -167,7 +167,7 @@ export function CookiePolicyPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">9. Contact Us</h2>
             <p>
-              If you have any questions about our use of cookies or this Cookie Policy, please <Link to="/support" className="text-lipilot-cyan hover:underline">contact us</Link>.
+              If you have any questions about our use of cookies or this Cookie Policy, please <Link to="/support" className="text-phoenix-cyan hover:underline">contact us</Link>.
             </p>
           </section>
         </motion.div>

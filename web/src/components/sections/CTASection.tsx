@@ -10,11 +10,11 @@ export function CTASection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative glass rounded-3xl p-12 border border-lipilot-cyan/30 overflow-hidden"
+          className="relative glass rounded-3xl p-12 border border-phoenix-cyan/30 overflow-hidden"
         >
           {/* Background Effects */}
-          <div className="absolute inset-0 bg-gradient-to-r from-lipilot-cyan/10 via-transparent to-blue-500/10" />
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-lipilot-cyan/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-r from-phoenix-cyan/10 via-transparent to-blue-500/10" />
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-phoenix-cyan/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
 
           <div className="relative z-10 text-center">
@@ -22,10 +22,10 @@ export function CTASection() {
               initial={{ scale: 0.9 }}
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-lipilot-cyan/30 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-phoenix-cyan/30 mb-6"
             >
-              <Sparkles className="w-5 h-5 text-lipilot-cyan" />
-              <span className="text-sm font-medium text-lipilot-cyan">
+              <Sparkles className="w-5 h-5 text-phoenix-cyan" />
+              <span className="text-sm font-medium text-phoenix-cyan">
                 Free forever, open-source
               </span>
             </motion.div>
@@ -34,24 +34,24 @@ export function CTASection() {
               Ready to Level Up Your <span className="text-gradient">LinkedIn Game</span>?
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Install LiPilot in 2 minutes. Free forever.
+              Install Phoenix Pilot in 2 minutes. Free forever.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
-                href="/lipilot-v2.0.zip"
-                className="group px-8 py-4 bg-gradient-to-r from-lipilot-cyan to-blue-500 hover:from-blue-500 hover:to-lipilot-cyan text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-lipilot-cyan/25 hover:shadow-lipilot-cyan/40"
+                href="/phoenix-v2.0.zip"
+                className="group px-8 py-4 bg-gradient-to-r from-phoenix-cyan to-blue-500 hover:from-blue-500 hover:to-phoenix-cyan text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-phoenix-cyan/25 hover:shadow-phoenix-cyan/40"
               >
                 <Download className="w-5 h-5" />
                 Download v2.0
               </a>
               <a
-                href="https://github.com/egorceo/lipilot"
+                href="https://github.com/egorceo/phoenix-pilot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-4 glass border border-white/20 hover:border-lipilot-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
+                className="px-8 py-4 glass border border-white/20 hover:border-phoenix-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
               >
-                <Github className="w-5 h-5 text-lipilot-cyan" />
+                <Github className="w-5 h-5 text-phoenix-cyan" />
                 View on GitHub
               </a>
             </div>

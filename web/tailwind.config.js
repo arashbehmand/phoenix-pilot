@@ -7,10 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'lipilot-blue': '#0a66c2',
-        'lipilot-cyan': '#00d4ff',
-        'lipilot-dark': '#0a0e27',
-        'lipilot-gray': '#1a1f3a',
+        'phoenix-blue': '#0a66c2',
+        'phoenix-cyan': '#00d4ff',
+        'phoenix-dark': '#0a0e27',
+        'phoenix-gray': '#1a1f3a',
       },
       animation: {
         'gradient': 'gradient 8s linear infinite',

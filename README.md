@@ -58,7 +58,7 @@ Build the extension:
 npm run build
 ```
 
-Load the generated `lipilot_ready_for_chrome/` directory as an unpacked extension in `chrome://extensions`.
+Load the generated `phoenix_pilot_ready_for_chrome/` directory as an unpacked extension in `chrome://extensions`.
 
 ## Extension Settings
 
@@ -119,7 +119,7 @@ npm run zip      # Build and package extension zip
 
 - `src/utils/llm-client.ts` is still used for comments, posts, refinement, and persona learning.
 - `src/utils/phoenix-client.ts` is used for Phoenix session listing, connection testing, communication-history sync, and DM reply generation.
-- The extension name is now `Phoenix Pilot`; some generated output directories still use the historical `lipilot_ready_for_chrome` name.
+- The extension build output is `phoenix_pilot_ready_for_chrome/`.
 
 ## Acknowledgement
 

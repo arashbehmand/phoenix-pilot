@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
 
 const screenshots = [
-  { src: '/screenshots/lipilot-comments.png', caption: 'AI comment generation with context analysis and scoring' },
-  { src: '/screenshots/lipilot-messages.png', caption: 'DM Co-pilot for smart LinkedIn conversation replies' },
-  { src: '/screenshots/lipilot-post.png', caption: 'Post Assistant with templates and tone control' },
-  { src: '/screenshots/lipilot-extension.png', caption: 'Extension popup with status and quick navigation' },
-  { src: '/screenshots/lipilot-settings-1.png', caption: 'Settings — choose LLM provider, model, and persona' },
-  { src: '/screenshots/lipilot-settings-2.png', caption: 'Settings — language, emojis, image analysis, learned preferences' },
+  { src: '/screenshots/phoenix-pilot-comments.png', caption: 'AI comment generation with context analysis and scoring' },
+  { src: '/screenshots/phoenix-pilot-messages.png', caption: 'DM Co-pilot for smart LinkedIn conversation replies' },
+  { src: '/screenshots/phoenix-pilot-post.png', caption: 'Post Assistant with templates and tone control' },
+  { src: '/screenshots/phoenix-pilot-extension.png', caption: 'Extension popup with status and quick navigation' },
+  { src: '/screenshots/phoenix-pilot-settings-1.png', caption: 'Settings — choose LLM provider, model, and persona' },
+  { src: '/screenshots/phoenix-pilot-settings-2.png', caption: 'Settings — language, emojis, image analysis, learned preferences' },
 ];
 
 export function ScreenshotsSection() {
@@ -23,7 +23,7 @@ export function ScreenshotsSection() {
             See It in <span className="text-gradient">Action</span>
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            See how LiPilot generates context-aware comments, messages, and posts directly in LinkedIn
+            See how Phoenix Pilot generates context-aware comments, messages, and posts directly in LinkedIn
           </p>
         </motion.div>
 

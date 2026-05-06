@@ -13,16 +13,16 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lipilot-cyan to-blue-500 flex items-center justify-center glow">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-phoenix-cyan to-blue-500 flex items-center justify-center glow">
               <MessageSquare className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gradient">LiPilot</span>
+            <span className="text-xl font-bold text-gradient">Phoenix Pilot</span>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com/egorceo/lipilot"
+              href="https://github.com/egorceo/phoenix-pilot"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition-all flex items-center gap-2"

@@ -11,7 +11,7 @@
   }
   
   body {
-    @apply bg-lipilot-dark text-white antialiased;
+    @apply bg-phoenix-dark text-white antialiased;
   }
   
   #root {
@@ -21,7 +21,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-lipilot-cyan via-blue-400 to-lipilot-cyan;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-phoenix-cyan via-blue-400 to-phoenix-cyan;
     background-size: 200% auto;
     animation: gradient 3s linear infinite;
   }

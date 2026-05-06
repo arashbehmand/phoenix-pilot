@@ -1,6 +1,6 @@
-# LiPilot Landing Page
+# Phoenix Pilot Landing Page
 
-Modern, high-converting landing page for LiPilot.com built with React, TailwindCSS, and Framer Motion.
+Modern, high-converting landing page for Phoenix Pilot.com built with React, TailwindCSS, and Framer Motion.
 
 ## 🚀 Quick Start
 
@@ -65,7 +65,7 @@ npm run build
 
 ```bash
 npm run build
-# Copy dist/ to /var/www/lipilot.com
+# Copy dist/ to /var/www/phoenix-pilot
 # Configure Nginx to serve static files
 ```
 

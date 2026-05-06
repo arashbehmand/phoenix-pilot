@@ -24,7 +24,7 @@ export function PrivacyPolicyPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-lipilot-cyan to-blue-500 mb-6 shadow-lg shadow-lipilot-cyan/25">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-phoenix-cyan to-blue-500 mb-6 shadow-lg shadow-phoenix-cyan/25">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">Privacy Policy</h1>
@@ -41,10 +41,10 @@ export function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
             <p className="mb-4">
-              LiPilot ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Chrome extension and web services.
+              Phoenix Pilot ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Chrome extension and web services.
             </p>
             <p>
-              By using LiPilot, you agree to the collection and use of information in accordance with this policy.
+              By using Phoenix Pilot, you agree to the collection and use of information in accordance with this policy.
             </p>
           </section>
 
@@ -134,7 +134,7 @@ export function PrivacyPolicyPage() {
               <li>Opt-out of non-essential communications</li>
             </ul>
             <p className="mt-4">
-              To exercise these rights, please <Link to="/support" className="text-lipilot-cyan hover:underline">contact us</Link>.
+              To exercise these rights, please <Link to="/support" className="text-phoenix-cyan hover:underline">contact us</Link>.
             </p>
           </section>
 
@@ -162,7 +162,7 @@ export function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">10. Contact Us</h2>
             <p>
-              If you have questions about this Privacy Policy, please <Link to="/support" className="text-lipilot-cyan hover:underline">contact us</Link>.
+              If you have questions about this Privacy Policy, please <Link to="/support" className="text-phoenix-cyan hover:underline">contact us</Link>.
             </p>
           </section>
         </motion.div>

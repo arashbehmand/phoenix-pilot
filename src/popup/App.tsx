@@ -40,7 +40,7 @@ export default function App() {
   };
 
   const openGitHub = () => {
-    chrome.tabs.create({ url: 'https://github.com/egorceo/lipilot' });
+    chrome.tabs.create({ url: 'https://github.com/egorceo/phoenix-pilot' });
   };
 
   return (

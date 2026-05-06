@@ -78,7 +78,7 @@ export function FeaturesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass rounded-2xl p-6 border border-white/10 hover:border-lipilot-cyan/30 transition-all group"
+              className="glass rounded-2xl p-6 border border-white/10 hover:border-phoenix-cyan/30 transition-all group"
             >
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                 <feature.icon className="w-6 h-6 text-white" />

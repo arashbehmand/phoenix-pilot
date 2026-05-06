@@ -11,7 +11,7 @@ import { Footer } from './Footer';
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-lipilot-dark via-gray-900 to-lipilot-dark">
+    <div className="min-h-screen bg-gradient-to-b from-phoenix-dark via-gray-900 to-phoenix-dark">
       <Navbar />
       <HeroSection />
       <FeaturesSection />

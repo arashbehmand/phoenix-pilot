@@ -10,7 +10,7 @@ const steps = [
   {
     icon: FolderOpen,
     title: 'Unzip',
-    description: 'Extract the downloaded lipilot-v2.0.zip to any folder on your computer',
+    description: 'Extract the downloaded phoenix-v2.0.zip to any folder on your computer',
   },
   {
     icon: Globe,
@@ -30,7 +30,7 @@ const steps = [
   {
     icon: CheckCircle,
     title: 'Configure & Go!',
-    description: 'Click the LiPilot icon → Settings. Choose your LLM provider, enter API key, describe your persona. Done!',
+    description: 'Click the Phoenix Pilot icon → Settings. Choose your LLM provider, enter API key, describe your persona. Done!',
   },
 ];
 
@@ -60,15 +60,15 @@ export function InstallSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass rounded-2xl p-6 border border-white/10 hover:border-lipilot-cyan/30 transition-all"
+              className="glass rounded-2xl p-6 border border-white/10 hover:border-phoenix-cyan/30 transition-all"
             >
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-lipilot-cyan/20 to-blue-500/20 border border-lipilot-cyan/30 flex items-center justify-center">
-                  <span className="text-lipilot-cyan font-bold text-sm">{index + 1}</span>
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-phoenix-cyan/20 to-blue-500/20 border border-phoenix-cyan/30 flex items-center justify-center">
+                  <span className="text-phoenix-cyan font-bold text-sm">{index + 1}</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <step.icon className="w-5 h-5 text-lipilot-cyan" />
+                    <step.icon className="w-5 h-5 text-phoenix-cyan" />
                     <h3 className="text-lg font-semibold text-white">{step.title}</h3>
                   </div>
                   <p className="text-sm text-gray-400">{step.description}</p>

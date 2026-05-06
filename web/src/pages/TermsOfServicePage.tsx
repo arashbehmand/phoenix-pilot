@@ -24,7 +24,7 @@ export function TermsOfServicePage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-lipilot-cyan to-blue-500 mb-6 shadow-lg shadow-lipilot-cyan/25">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-phoenix-cyan to-blue-500 mb-6 shadow-lg shadow-phoenix-cyan/25">
             <FileText className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">Terms of Service</h1>
@@ -41,14 +41,14 @@ export function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
             <p className="mb-4">
-              By accessing and using LiPilot ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use our Service.
+              By accessing and using Phoenix Pilot ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use our Service.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">2. Description of Service</h2>
             <p className="mb-4">
-              LiPilot is an AI-powered Chrome extension that helps users generate contextual comments for LinkedIn posts. The Service includes:
+              Phoenix Pilot is an AI-powered Chrome extension that helps users generate contextual comments for LinkedIn posts. The Service includes:
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>AI-generated comment suggestions based on your persona</li>
@@ -100,7 +100,7 @@ export function TermsOfServicePage() {
 
             <h3 className="text-xl font-semibold text-white mb-3">5.2 Our Content</h3>
             <p>
-              The Service, including its original content, features, and functionality, is owned by LiPilot and is protected by international copyright, trademark, and other intellectual property laws.
+              The Service, including its original content, features, and functionality, is owned by Phoenix Pilot and is protected by international copyright, trademark, and other intellectual property laws.
             </p>
           </section>
 
@@ -160,14 +160,14 @@ export function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">9. Limitation of Liability</h2>
             <p>
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, LIPILOT SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM YOUR USE OF THE SERVICE.
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, PHOENIX PILOT SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM YOUR USE OF THE SERVICE.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">10. Indemnification</h2>
             <p>
-              You agree to indemnify and hold harmless LiPilot, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising out of your use of the Service or violation of these Terms.
+              You agree to indemnify and hold harmless Phoenix Pilot, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising out of your use of the Service or violation of these Terms.
             </p>
           </section>
 
@@ -194,14 +194,14 @@ export function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">13. Governing Law</h2>
             <p>
-              These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which LiPilot operates, without regard to its conflict of law provisions.
+              These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Phoenix Pilot operates, without regard to its conflict of law provisions.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">14. Contact Information</h2>
             <p>
-              If you have any questions about these Terms of Service, please <Link to="/support" className="text-lipilot-cyan hover:underline">contact us</Link>.
+              If you have any questions about these Terms of Service, please <Link to="/support" className="text-phoenix-cyan hover:underline">contact us</Link>.
             </p>
           </section>
         </motion.div>

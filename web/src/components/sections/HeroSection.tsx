@@ -7,7 +7,7 @@ export function HeroSection() {
     <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-lipilot-cyan/20 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-phoenix-cyan/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl" />
       </div>
 
@@ -23,10 +23,10 @@ export function HeroSection() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-lipilot-cyan/30 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-phoenix-cyan/30 mb-8"
           >
-            <Sparkles className="w-4 h-4 text-lipilot-cyan" />
-            <span className="text-sm font-medium text-lipilot-cyan">
+            <Sparkles className="w-4 h-4 text-phoenix-cyan" />
+            <span className="text-sm font-medium text-phoenix-cyan">
               Free & Open-Source — No Signup Required
             </span>
           </motion.div>
@@ -42,7 +42,7 @@ export function HeroSection() {
           <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
             Context-aware commenting with image analysis, thread history, and
             <br />
-            <span className="text-lipilot-cyan font-semibold">voice learning</span> — free forever, open-source, no account needed.
+            <span className="text-phoenix-cyan font-semibold">voice learning</span> — free forever, open-source, no account needed.
           </p>
 
           {/* CTA Buttons */}
@@ -53,26 +53,26 @@ export function HeroSection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
           >
             <a
-              href="/lipilot-v2.0.zip"
-              className="group px-8 py-4 bg-gradient-to-r from-lipilot-cyan to-blue-500 hover:from-blue-500 hover:to-lipilot-cyan text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-lipilot-cyan/25 hover:shadow-lipilot-cyan/40"
+              href="/phoenix-v2.0.zip"
+              className="group px-8 py-4 bg-gradient-to-r from-phoenix-cyan to-blue-500 hover:from-blue-500 hover:to-phoenix-cyan text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-phoenix-cyan/25 hover:shadow-phoenix-cyan/40"
             >
               <Download className="w-5 h-5" />
               Download v2.0
             </a>
             <a
               href="#install"
-              className="px-8 py-4 glass border border-white/20 hover:border-lipilot-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
+              className="px-8 py-4 glass border border-white/20 hover:border-phoenix-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
             >
-              <ChevronDown className="w-5 h-5 text-lipilot-cyan" />
+              <ChevronDown className="w-5 h-5 text-phoenix-cyan" />
               How to Install
             </a>
             <a
-              href="https://github.com/egorceo/lipilot"
+              href="https://github.com/egorceo/phoenix-pilot"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-4 glass border border-white/20 hover:border-lipilot-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
+              className="px-8 py-4 glass border border-white/20 hover:border-phoenix-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
             >
-              <Github className="w-5 h-5 text-lipilot-cyan" />
+              <Github className="w-5 h-5 text-phoenix-cyan" />
               GitHub
             </a>
           </motion.div>

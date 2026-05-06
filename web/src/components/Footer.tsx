@@ -9,10 +9,10 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lipilot-cyan to-blue-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-phoenix-cyan to-blue-500 flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gradient">LiPilot</span>
+              <span className="text-xl font-bold text-gradient">Phoenix Pilot</span>
             </div>
             <p className="text-sm text-gray-400">
               Free, open-source AI-powered LinkedIn comment assistant that learns your voice.
@@ -23,10 +23,10 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="/#features" className="hover:text-lipilot-cyan transition-colors">Features</a></li>
-              <li><a href="#install" className="hover:text-lipilot-cyan transition-colors">Install Guide</a></li>
+              <li><a href="/#features" className="hover:text-phoenix-cyan transition-colors">Features</a></li>
+              <li><a href="#install" className="hover:text-phoenix-cyan transition-colors">Install Guide</a></li>
               <li>
-                <a href="https://github.com/egorceo/lipilot" target="_blank" rel="noopener noreferrer" className="hover:text-lipilot-cyan transition-colors flex items-center gap-1">
+                <a href="https://github.com/egorceo/phoenix-pilot" target="_blank" rel="noopener noreferrer" className="hover:text-phoenix-cyan transition-colors flex items-center gap-1">
                   <Github className="w-3 h-3" />
                   GitHub
                 </a>
@@ -39,13 +39,13 @@ export function Footer() {
             <h4 className="font-semibold text-white mb-4">Creator</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <a href="https://www.linkedin.com/in/egor-karpovich/" target="_blank" rel="noopener noreferrer" className="hover:text-lipilot-cyan transition-colors flex items-center gap-1">
+                <a href="https://www.linkedin.com/in/egor-karpovich/" target="_blank" rel="noopener noreferrer" className="hover:text-phoenix-cyan transition-colors flex items-center gap-1">
                   <Linkedin className="w-3 h-3" />
                   Egor Karpovich
                 </a>
               </li>
               <li>
-                <a href="https://travel-code.com" target="_blank" rel="noopener noreferrer" className="hover:text-lipilot-cyan transition-colors flex items-center gap-1">
+                <a href="https://travel-code.com" target="_blank" rel="noopener noreferrer" className="hover:text-phoenix-cyan transition-colors flex items-center gap-1">
                   <ExternalLink className="w-3 h-3" />
                   Travel Code
                 </a>
@@ -57,9 +57,9 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/privacy" className="hover:text-lipilot-cyan transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-lipilot-cyan transition-colors">Terms of Service</Link></li>
-              <li><Link to="/cookies" className="hover:text-lipilot-cyan transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/privacy" className="hover:text-phoenix-cyan transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-phoenix-cyan transition-colors">Terms of Service</Link></li>
+              <li><Link to="/cookies" className="hover:text-phoenix-cyan transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-400">
-            © 2025 LiPilot. Open-source under MIT License.
+            © 2025 Phoenix Pilot. Open-source under MIT License.
           </p>
           <p className="text-sm text-gray-500">
             Built by Egor Karpovich — Supported by{' '}
@@ -75,7 +75,7 @@ export function Footer() {
               href="https://travel-code.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-lipilot-cyan hover:text-lipilot-cyan/80 transition-colors"
+              className="text-phoenix-cyan hover:text-phoenix-cyan/80 transition-colors"
             >
               Travel Code
             </a>
