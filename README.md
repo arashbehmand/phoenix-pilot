@@ -140,7 +140,7 @@ Payload:
 }
 ```
 
-Built-in refinement buttons currently target the common LinkedIn DM fixes: shorten the response, tune tone, and point to one relevant project or concrete experience from the user context.
+The refinement box accepts any instruction the user wants to apply to the current suggested reply.
 
 ## Authentication Contract
 

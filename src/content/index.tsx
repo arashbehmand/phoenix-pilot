@@ -568,7 +568,6 @@ function getPanelStyles(): string {
       gap: 8px;
     }
 
-    .refine-actions,
     .refine-custom-row {
       display: flex;
       gap: 8px;

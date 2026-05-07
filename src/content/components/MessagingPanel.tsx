@@ -423,35 +423,6 @@ export function MessagingPanel({
                     </button>
                   </div>
                   <div className="refine-panel">
-                    <div className="refine-actions">
-                      <button
-                        className="action-btn"
-                        disabled={isRefining}
-                        onClick={() => handleRefine('Make this much shorter. Keep it direct, warm, and natural.')}
-                      >
-                        Shorter
-                      </button>
-                      <button
-                        className="action-btn"
-                        disabled={isRefining}
-                        onClick={() =>
-                          handleRefine('Tune the tone to be concise, confident, and human. Remove over-explaining.')
-                        }
-                      >
-                        Tune tone
-                      </button>
-                      <button
-                        className="action-btn"
-                        disabled={isRefining}
-                        onClick={() =>
-                          handleRefine(
-                            'Point to one relevant project or concrete experience from my resume/context, but keep the reply brief.'
-                          )
-                        }
-                      >
-                        Point to project
-                      </button>
-                    </div>
                     <div className="refine-custom-row">
                       <input
                         className="refine-input"
