@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ConversationContext, MessageRequest, MessageResponse, PhoenixSession, ScoredReply } from '../../types';
-import { fetchPhoenixSessions } from '../../utils/phoenix-client';
-import { getSettings, savePhoenixSession } from '../../utils/storage';
+import { savePhoenixSession } from '../../utils/storage';
 
 function isExtensionContextValid(): boolean {
   try {
@@ -123,15 +122,18 @@ export function MessagingPanel({
     setIsLoadingSessions(true);
     setError(null);
 
-    const settings = await getSettings();
-    const loadedSessions = await fetchPhoenixSessions(settings.phoenixBaseUrl);
+    const response = await safeSendMessage({ type: 'LIST_SESSIONS' });
+    const loadedSessions = response.sessions || [];
     setSessions(loadedSessions);
 
     if (loadedSessions.length === 0) {
       setSelectedSessionId('');
-      setError('Log in to Phoenix, then reopen this panel or refresh sessions.');
-    } else if (settings.phoenixSessionId && loadedSessions.some((session) => session.id === settings.phoenixSessionId)) {
-      setSelectedSessionId(settings.phoenixSessionId);
+      setError(response.error || 'Log in to Phoenix, then reopen this panel or refresh sessions.');
+    } else if (
+      response.settings?.phoenixSessionId &&
+      loadedSessions.some((session) => session.id === response.settings?.phoenixSessionId)
+    ) {
+      setSelectedSessionId(response.settings.phoenixSessionId);
     } else {
       setSelectedSessionId('');
     }

@@ -11,6 +11,7 @@ export interface PhoenixSession {
 }
 
 export type MessageRequest =
+  | { type: 'LIST_SESSIONS' }
   | { type: 'GENERATE_MESSAGES'; payload: MessagingRequest }
   | { type: 'CHECK_CONFIG' }
   | { type: 'OPEN_OPTIONS' };
@@ -22,6 +23,7 @@ export interface MessageResponse {
   configStatus?: {
     phoenixAuthenticated: boolean;
   };
+  sessions?: PhoenixSession[];
   replies?: ScoredReply[];
   summary?: ConversationSummary;
 }

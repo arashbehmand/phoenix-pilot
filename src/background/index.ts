@@ -1,11 +1,20 @@
 import { getSettings, migrateFromSaaSVersion, migrateFromSalesVersion } from '../utils/storage';
-import { formatMessagesText, generateLinkedInReply, getPhoenixUser } from '../utils/phoenix-client';
+import { fetchPhoenixSessions, formatMessagesText, generateLinkedInReply, getPhoenixUser } from '../utils/phoenix-client';
 import type { MessageRequest, MessageResponse, ScoredReply } from '../types';
 
 migrateFromSaaSVersion();
 migrateFromSalesVersion();
 
 chrome.runtime.onMessage.addListener((request: MessageRequest, _sender, sendResponse) => {
+  if (request.type === 'LIST_SESSIONS') {
+    handleListSessions()
+      .then(sendResponse)
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message || 'Failed to load Phoenix sessions' });
+      });
+    return true;
+  }
+
   if (request.type === 'GENERATE_MESSAGES') {
     handleGenerateMessages(request.payload)
       .then(sendResponse)
@@ -31,6 +40,37 @@ chrome.runtime.onMessage.addListener((request: MessageRequest, _sender, sendResp
 
   return false;
 });
+
+async function handleListSessions(): Promise<MessageResponse> {
+  const settings = await getSettings();
+
+  if (!settings.phoenixBaseUrl) {
+    return { success: false, error: 'Phoenix base URL is not configured.', sessions: [] };
+  }
+
+  const auth = await getPhoenixUser(settings.phoenixBaseUrl);
+  if (!auth.success) {
+    return {
+      success: false,
+      error: auth.error || 'Log in to Phoenix to use Phoenix Pilot.',
+      settings,
+      sessions: [],
+      configStatus: {
+        phoenixAuthenticated: false,
+      },
+    };
+  }
+
+  const sessions = await fetchPhoenixSessions(settings.phoenixBaseUrl);
+  return {
+    success: true,
+    settings,
+    sessions,
+    configStatus: {
+      phoenixAuthenticated: true,
+    },
+  };
+}
 
 async function handleCheckConfig(): Promise<MessageResponse> {
   const settings = await getSettings();
