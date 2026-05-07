@@ -1,47 +1,35 @@
-import { useState, useEffect, useRef } from 'react';
-import type { ConversationContext, MessagingToneType, MessageRequest, MessageResponse, ScoredReply, ConversationSummary } from '../../types';
-import { getSettings } from '../../utils/storage';
+import { useEffect, useRef, useState } from 'react';
+import type { ConversationContext, MessageRequest, MessageResponse, PhoenixSession, ScoredReply } from '../../types';
+import { fetchPhoenixSessions } from '../../utils/phoenix-client';
+import { getSettings, savePhoenixSession } from '../../utils/storage';
 
-const MESSAGING_TONE_OPTIONS: { value: MessagingToneType; label: string }[] = [
-  { value: 'friendly', label: 'Friendly' },
-  { value: 'professional', label: 'Professional' },
-  { value: 'follow-up', label: 'Follow-up' },
-  { value: 'informational', label: 'Informational Interview' },
-  { value: 'networking', label: 'Networking' },
-];
-
-/**
- * Check if the extension context is still valid
- */
 function isExtensionContextValid(): boolean {
   try {
-    return !!(chrome?.runtime?.id);
+    return !!chrome?.runtime?.id;
   } catch {
     return false;
   }
 }
 
-/**
- * Safely send a message to the background script
- */
 async function safeSendMessage(request: MessageRequest): Promise<MessageResponse> {
   if (!isExtensionContextValid()) {
-    return { 
-      success: false, 
-      error: 'Extension was updated. Please refresh the page.' 
+    return {
+      success: false,
+      error: 'Extension was updated. Please refresh the page.',
     };
   }
-  
+
   try {
-    const response = await chrome.runtime.sendMessage(request) as MessageResponse;
-    return response;
+    return (await chrome.runtime.sendMessage(request)) as MessageResponse;
   } catch (error) {
-    if (error instanceof Error && 
-        (error.message.includes('Extension context invalidated') || 
-         error.message.includes('Receiving end does not exist'))) {
-      return { 
-        success: false, 
-        error: 'Extension was updated. Please refresh the page.' 
+    if (
+      error instanceof Error &&
+      (error.message.includes('Extension context invalidated') ||
+        error.message.includes('Receiving end does not exist'))
+    ) {
+      return {
+        success: false,
+        error: 'Extension was updated. Please refresh the page.',
       };
     }
     throw error;
@@ -55,40 +43,36 @@ interface MessagingPanelProps {
   onInsertReply: (reply: string) => void;
 }
 
-export function MessagingPanel({ conversationContext, isScanning = false, onClose, onInsertReply }: MessagingPanelProps) {
-  const [tone, setTone] = useState<MessagingToneType>('friendly');
+export function MessagingPanel({
+  conversationContext,
+  isScanning = false,
+  onClose,
+  onInsertReply,
+}: MessagingPanelProps) {
   const [userThoughts, setUserThoughts] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+  const [sessions, setSessions] = useState<PhoenixSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState('');
   const [replies, setReplies] = useState<ScoredReply[]>([]);
-  const [summary, setSummary] = useState<ConversationSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasPhoenixSession, setHasPhoenixSession] = useState(true);
-  const [sessionName, setSessionName] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const canGenerate = !isScanning && conversationContext && conversationContext.messages.length > 0 && hasPhoenixSession;
-  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ isDragging: false, startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
+  const canGenerate =
+    !isScanning &&
+    !isLoadingSessions &&
+    !!conversationContext &&
+    conversationContext.messages.length > 0 &&
+    !!selectedSessionId;
+
   useEffect(() => {
-    getSettings().then((settings) => {
-      setHasPhoenixSession(!!settings.phoenixBaseUrl && !!settings.phoenixToken && !!settings.phoenixSessionId);
-      setSessionName(settings.phoenixSessionName || '');
-    });
+    loadSessions();
   }, []);
 
-  // Auto-resize textarea
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
-    }
-  };
-
-  // Draggable functionality
   useEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
@@ -96,24 +80,24 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.panel-header')) return;
-      
+
       dragRef.current.isDragging = true;
       dragRef.current.startX = e.clientX;
       dragRef.current.startY = e.clientY;
-      
+
       const rect = panel.getBoundingClientRect();
       dragRef.current.initialX = rect.left;
       dragRef.current.initialY = rect.top;
-      
+
       panel.style.transition = 'none';
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragRef.current.isDragging) return;
-      
+
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
-      
+
       panel.style.right = 'auto';
       panel.style.left = `${dragRef.current.initialX + dx}px`;
       panel.style.top = `${dragRef.current.initialY + dy}px`;
@@ -135,50 +119,72 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
     };
   }, []);
 
+  const loadSessions = async () => {
+    setIsLoadingSessions(true);
+    setError(null);
+
+    const settings = await getSettings();
+    const loadedSessions = await fetchPhoenixSessions(settings.phoenixBaseUrl);
+    setSessions(loadedSessions);
+
+    if (loadedSessions.length === 0) {
+      setSelectedSessionId('');
+      setError('Log in to Phoenix, then reopen this panel or refresh sessions.');
+    } else if (settings.phoenixSessionId && loadedSessions.some((session) => session.id === settings.phoenixSessionId)) {
+      setSelectedSessionId(settings.phoenixSessionId);
+    } else {
+      setSelectedSessionId('');
+    }
+
+    setIsLoadingSessions(false);
+  };
+
+  const handleSessionChange = async (sessionId: string) => {
+    const selected = sessions.find((session) => session.id === sessionId);
+    setSelectedSessionId(sessionId);
+    await savePhoenixSession(sessionId, selected?.display_name || '');
+  };
+
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  };
+
   const handleGenerate = async () => {
     if (!conversationContext) {
       setError('No conversation context available.');
       return;
     }
 
+    if (!selectedSessionId) {
+      setError('Select a Phoenix session before generating a reply.');
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setReplies([]);
-    setSummary(null);
 
     try {
-      const settings = await getSettings();
-      
-      if (!settings.phoenixBaseUrl || !settings.phoenixToken || !settings.phoenixSessionId) {
-        setHasPhoenixSession(false);
-        return;
-      }
-
-      const request: MessageRequest = {
+      const response = await safeSendMessage({
         type: 'GENERATE_MESSAGES',
         payload: {
           conversationContext,
-          tone,
-          persona: settings.persona,
-          enableEmojis: settings.enableEmojis ?? false,
-          languageLevel: settings.languageLevel || 'fluent',
+          sessionId: selectedSessionId,
           userThoughts: userThoughts.trim() || undefined,
-          jobSearchContext: settings.jobSearchContext || undefined,
         },
-      };
-
-      const response = await safeSendMessage(request);
+      });
 
       if (response.success && response.replies) {
         setReplies(response.replies);
-        if (response.summary) {
-          setSummary(response.summary);
-        }
       } else {
-        setError(response.error || 'Failed to generate replies');
+        setError(response.error || 'Failed to generate replies.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setIsGenerating(false);
     }
@@ -196,57 +202,11 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
 
   const openSettings = () => {
     if (isExtensionContextValid()) {
-      try {
-        chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' });
-      } catch {
-        setError('Extension was updated. Please refresh the page.');
-      }
+      chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' });
     } else {
       setError('Extension was updated. Please refresh the page.');
     }
   };
-
-  // No Phoenix Session State
-  if (!hasPhoenixSession) {
-    return (
-      <div className="panel messaging-panel" ref={panelRef}>
-        <div className="panel-header">
-          <div className="panel-title">
-            <div className="panel-icon messaging">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <span>Conversation Co-pilot</span>
-          </div>
-          <button className="close-btn" onClick={onClose}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        
-        <div className="panel-content">
-          <div className="no-api-key">
-            <div className="no-api-key-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-              </svg>
-            </div>
-            <h3>Phoenix Session Required</h3>
-            <p>A Phoenix session is required to generate messages.</p>
-            <button className="settings-btn" onClick={openSettings}>
-              Open Settings
-            </button>
-          </div>
-        </div>
-
-        <div className="panel-footer">
-          <span>Phoenix Pilot - AI job search assistant for LinkedIn</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="panel messaging-panel" ref={panelRef}>
@@ -254,19 +214,18 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
         <div className="panel-title">
           <div className="panel-icon messaging">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
           <span>Conversation Co-pilot</span>
         </div>
         <button className="close-btn" onClick={onClose}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
+            <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      {/* Context Summary */}
       <div className="messaging-context">
         {isScanning ? (
           <div className="context-scanning">
@@ -283,42 +242,46 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
               <div className="context-headline">{conversationContext.participantHeadline}</div>
             )}
             <div className="context-stats">
-              <span className="stat">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                {conversationContext.messages.length} messages
-              </span>
+              <span className="stat">{conversationContext.messages.length} messages</span>
               <span className="stat">
                 <span className={`sentiment-dot ${conversationContext.sentiment}`} />
                 {conversationContext.sentiment}
               </span>
             </div>
-            {summary && (
-              <div className="ai-summary">
-                <div className="summary-topic">{summary.topic}</div>
-                <div className="summary-action">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  {summary.suggestedAction}
-                </div>
-              </div>
-            )}
           </>
         ) : (
-          <div className="context-empty">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 8v4M12 16h.01"/>
-            </svg>
-            <span>Open a conversation to get started</span>
-          </div>
+          <div className="context-empty">Open a conversation to get started</div>
         )}
       </div>
 
       <div className="panel-content">
-        {/* Your Goal Input */}
+        <div className="section">
+          <div className="section-label">Phoenix Session</div>
+          <div className="session-row">
+            <select
+              className="tone-select"
+              value={selectedSessionId}
+              onChange={(e) => handleSessionChange(e.target.value)}
+              disabled={isLoadingSessions || sessions.length === 0}
+            >
+              <option value="">
+                {isLoadingSessions ? 'Loading sessions...' : sessions.length === 0 ? 'No sessions available' : 'Select a Phoenix session'}
+              </option>
+              {sessions.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.display_name}
+                </option>
+              ))}
+            </select>
+            <button className="action-btn" onClick={loadSessions} disabled={isLoadingSessions} title="Refresh sessions">
+              {isLoadingSessions ? <div className="spinner-small" /> : 'Refresh'}
+            </button>
+          </div>
+          {sessions.length === 0 && !isLoadingSessions && (
+            <button className="settings-btn inline" onClick={openSettings}>Open Phoenix Login</button>
+          )}
+        </div>
+
         <div className="section">
           <div className="section-label">Your goal for this reply <span className="optional-label">(optional)</span></div>
           <div className="thoughts-input-wrapper">
@@ -330,7 +293,7 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
                 setUserThoughts(e.target.value);
                 adjustTextareaHeight();
               }}
-              placeholder="e.g., Ask for a 20-min call, thank them for the intro, schedule next steps..."
+              placeholder="Ask for a 20-min call, thank them for the intro, schedule next steps..."
               rows={2}
             />
             {userThoughts && (
@@ -345,148 +308,69 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
                 title="Clear"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12"/>
+                  <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
             )}
           </div>
         </div>
 
-        {/* Phoenix Session */}
         <div className="section">
-          <div className="phoenix-session-badge">
-            {sessionName ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                </svg>
-                <span>{sessionName}</span>
-              </>
-            ) : (
-              <span className="warning">No Phoenix session</span>
-            )}
-          </div>
-        </div>
-
-        {/* Tone Selector */}
-        <div className="section">
-          <div className="section-label">Conversation Tone</div>
-          <select
-            className="tone-select"
-            value={tone}
-            onChange={(e) => setTone(e.target.value as MessagingToneType)}
-          >
-            {MESSAGING_TONE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Generate Button */}
-        <div className="section">
-          <button
-            className="generate-btn"
-            onClick={handleGenerate}
-            disabled={!canGenerate || isGenerating}
-          >
-            {isScanning ? (
+          <button className="generate-btn" onClick={handleGenerate} disabled={!canGenerate || isGenerating}>
+            {isGenerating ? (
               <>
                 <div className="spinner" />
-                Analyzing Chat...
-              </>
-            ) : isGenerating ? (
-              <>
-                <div className="spinner" />
-                Crafting Replies...
+                Crafting Reply...
               </>
             ) : !conversationContext ? (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                Open a Conversation
-              </>
+              'Open a Conversation'
+            ) : !selectedSessionId ? (
+              'Select a Phoenix Session'
             ) : (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-                Suggest Replies
-              </>
+              'Suggest Reply'
             )}
           </button>
         </div>
 
-        {/* Loading Shimmer */}
         {isGenerating && (
           <div className="shimmer-container">
             <div className="shimmer-card">
-              <div className="shimmer-line long"></div>
-              <div className="shimmer-line short"></div>
-            </div>
-            <div className="shimmer-card">
-              <div className="shimmer-line medium"></div>
-              <div className="shimmer-line long"></div>
+              <div className="shimmer-line long" />
+              <div className="shimmer-line short" />
             </div>
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="error-message">
             <svg className="error-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <span>{error}</span>
           </div>
         )}
 
-        {/* Results */}
         {replies.length > 0 && !isGenerating && (
           <div className="section">
-            <div className="section-label">Suggested Replies</div>
+            <div className="section-label">Suggested Reply</div>
             <div className="results">
               {replies.map((reply, index) => (
                 <div key={index} className="comment-card">
-                  {/* Recommendation Tag */}
                   <div className="recommendation-tag">{reply.recommendationTag}</div>
-                  
                   <div className="comment-text">{reply.text}</div>
-                  
                   <div className="comment-actions">
-                    <div className="action-group">
-                      <button
-                        className={`action-btn ${copiedIndex === index ? 'copied' : ''}`}
-                        onClick={() => handleCopyToClipboard(reply.text, index)}
-                        title="Copy to clipboard"
-                      >
-                        {copiedIndex === index ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                          </svg>
-                        )}
-                      </button>
-                      <button
-                        className="insert-btn"
-                        onClick={() => onInsertReply(reply.text)}
-                        title="Insert into message box"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                        Send
-                      </button>
-                    </div>
+                    <button
+                      className={`action-btn ${copiedIndex === index ? 'copied' : ''}`}
+                      onClick={() => handleCopyToClipboard(reply.text, index)}
+                      title="Copy to clipboard"
+                    >
+                      {copiedIndex === index ? 'Copied' : 'Copy'}
+                    </button>
+                    <button className="insert-btn" onClick={() => onInsertReply(reply.text)} title="Insert into message box">
+                      Insert
+                    </button>
                   </div>
                 </div>
               ))}
@@ -495,7 +379,6 @@ export function MessagingPanel({ conversationContext, isScanning = false, onClos
         )}
       </div>
 
-      {/* Sponsor Footer */}
       <div className="panel-footer">
         <span>Phoenix Pilot - AI job search assistant for LinkedIn</span>
       </div>

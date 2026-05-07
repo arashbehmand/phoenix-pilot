@@ -1,37 +1,80 @@
 # Phoenix Pilot
 
-Phoenix Pilot is a Chrome extension for job seekers using LinkedIn. It helps draft authentic comments, posts, and LinkedIn DMs while connecting message generation to a Phoenix Job Assistant session.
+Phoenix Pilot is a Chrome extension that adds a Phoenix-powered reply assistant to LinkedIn messaging. It is scoped to LinkedIn DMs: the old local OpenAI/Anthropic/Gemini comment and post generation paths have been removed.
 
-The extension keeps comment and post generation on the local bring-your-own-key LLM path. LinkedIn DM generation is routed through Phoenix so replies can use your resume, honest job preferences, and session communication history.
+Authentication is handled by the Phoenix website. The extension does not store provider API keys, Phoenix bearer tokens, or user IDs in Chrome storage. After the user logs in to Phoenix in the browser, the extension calls Phoenix with cookie-authenticated requests.
 
-## What It Does
+## User Flow
 
-- **LinkedIn comments**: Generates scored comment options using your persona, preferred tone, language level, image analysis, and optional job-search context.
-- **LinkedIn DMs**: Scrapes the active conversation, syncs it into Phoenix as a contact-specific communication-history block, then runs Phoenix's `linkedin_response` task.
-- **LinkedIn posts**: Generates first-person LinkedIn posts from a topic, tone, and key points.
-- **Persona learning**: Learns from edits you make to generated comments and applies those preferences later.
-- **Phoenix session sync**: Preserves existing email threads, notes, and other context by replacing only the relevant LinkedIn contact block.
+1. Install the extension.
+2. Open the extension Settings page.
+3. Click **Open Phoenix Login** and log in to Phoenix.
+4. Open LinkedIn Messaging.
+5. Click the Phoenix reply button in the LinkedIn message composer.
+6. Select a Phoenix session in the reply panel.
+7. Optionally describe the goal for the reply.
+8. Click **Suggest Reply**.
+9. Insert or copy the generated reply.
 
-## Architecture
+The selected session is remembered as a convenience, but session selection lives in the LinkedIn reply panel, not in Settings.
 
-DM generation uses a two-step Phoenix flow:
+## What The Extension Does
 
-1. `POST /api/v1/sessions/{session_id}/pilot-block`
+- Detects LinkedIn Messaging pages and injects one reply-assistant button into the message composer.
+- Scrapes the active LinkedIn conversation from the page.
+- Lists Phoenix sessions for the logged-in Phoenix user.
+- Syncs the conversation into the selected Phoenix session via `pilot-block`.
+- Runs Phoenix's `linkedin_response` task.
+- Displays the generated reply and lets the user insert it into LinkedIn.
 
-   Syncs the LinkedIn conversation into the session's `communication_history` artifact:
+The extension does not inject comment-generation buttons into the feed and does not inject a post-generation assistant into LinkedIn post creation.
 
-   ```xml
-   <phoenix-pilot-messages username="Jane Doe" headline="Recruiter at Google" updated="2026-05-06T10:00:00Z">
-   [2026-05-06 10:00] Jane Doe: Hi, I came across your profile...
-   [2026-05-06 10:05] Me: Thanks for reaching out.
-   </phoenix-pilot-messages>
+## Runtime Architecture
+
+The content script owns LinkedIn page integration:
+
+- `src/content/index.tsx` injects the LinkedIn Messaging button and renders the panel.
+- `src/content/utils/messaging-scraper.ts` extracts the active conversation and inserts generated text back into LinkedIn.
+- `src/content/components/MessagingPanel.tsx` loads Phoenix sessions, stores the selected session, collects the user's reply goal, and sends generation requests to the background service worker.
+
+The background service worker owns Phoenix generation:
+
+- `src/background/index.ts` handles `GENERATE_MESSAGES`, `CHECK_CONFIG`, and `OPEN_OPTIONS`.
+- `src/utils/phoenix-client.ts` performs Phoenix API calls with `credentials: 'include'`.
+- `src/utils/storage.ts` stores only the Phoenix API base URL and the last selected session ID/name.
+
+The options and popup UIs are intentionally small:
+
+- `src/options/App.tsx` checks Phoenix login state and lets developers override the Phoenix API base URL.
+- `src/popup/App.tsx` shows whether Phoenix login is available and links to LinkedIn Messaging.
+
+## Phoenix API Flow
+
+The extension uses this generation sequence:
+
+1. `GET /auth/me`
+
+   Checks whether the browser has a valid Phoenix auth cookie.
+
+2. `GET /api/v1/sessions`
+
+   Lists sessions for the authenticated user. The selected session must have honest context configured.
+
+3. `POST /api/v1/sessions/{session_id}/pilot-block`
+
+   Sends the LinkedIn conversation as a contact-specific communication-history block:
+
+   ```json
+   {
+     "username": "Jane Doe",
+     "headline": "Recruiter at Example",
+     "messages_text": "[10:00] Jane Doe: Hi...\n[10:05] Me: Thanks..."
+   }
    ```
 
-   If the same contact is synced again, Phoenix Pilot replaces that contact's block. Other contacts and existing email or note context are preserved.
+4. `POST /api/v1/sessions/{session_id}/tasks`
 
-2. `POST /api/v1/sessions/{session_id}/tasks`
-
-   Runs:
+   Runs Phoenix's LinkedIn reply task:
 
    ```json
    {
@@ -42,9 +85,62 @@ DM generation uses a two-step Phoenix flow:
    }
    ```
 
-   The returned `artifact.text_payload` is shown as the suggested LinkedIn reply.
+The extension displays `artifact.text_payload`, falling back to compatible text fields if needed.
 
-## Setup
+## Authentication Contract
+
+Phoenix backend routes still support bearer tokens for compatibility, but this extension uses cookie auth.
+
+Expected cookies:
+
+- `auth_access_token`: short-lived JWT access token, `HttpOnly`
+- `auth_refresh_token`: long-lived JWT refresh token, `HttpOnly`
+
+Extension requests use:
+
+```ts
+fetch(url, {
+  credentials: 'include',
+});
+```
+
+Backend requirements:
+
+- `GET /auth/me` must accept the `auth_access_token` cookie.
+- Protected `/api/v1/*` session/task routes must accept the access cookie.
+- OAuth callback should set both auth cookies after successful login.
+- `/auth/refresh` should accept the refresh cookie and rotate/set a new access cookie.
+- `/auth/logout` should clear both cookies.
+- CORS must allow the extension origin and credentials.
+
+Production cookie defaults:
+
+- `HttpOnly`
+- `Secure`
+- `SameSite=None`
+- `Path=/`
+
+Local development may use non-secure `SameSite=Lax` cookies for `localhost`.
+
+## Extension Settings
+
+Settings contains only Phoenix connection controls:
+
+- Phoenix API base URL, defaulting to `https://api.phoenix0.online`
+- Login status check
+- Button to open the Phoenix login page
+
+There are no provider API-key settings, model selectors, Phoenix bearer-token fields, Phoenix user-ID fields, persona fields, comment settings, post settings, or global active-session selector.
+
+For local development, set the API base URL to a local backend such as:
+
+```text
+http://localhost:8000
+```
+
+The login button maps a local API URL on port `8000` to the Phoenix webapp on port `5173`.
+
+## Installation
 
 Install dependencies:
 
@@ -58,55 +154,16 @@ Build the extension:
 npm run build
 ```
 
-Load the generated `phoenix_pilot_ready_for_chrome/` directory as an unpacked extension in `chrome://extensions`.
+Load the built extension:
 
-## Extension Settings
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select `phoenix_pilot_ready_for_chrome/`.
 
-Open the extension options page and configure:
+## Development
 
-- LLM provider, API key, model, persona, language level, emoji preference, and image analysis for comments and posts.
-- Optional **Job Search Context** for subtle comment positioning.
-- Phoenix base URL, bearer token, user ID, and active session for LinkedIn DM generation.
-
-The selected Phoenix session must have honest context configured for `linkedin_response` to work well.
-
-## Phoenix Backend
-
-The backend endpoint lives in:
-
-```text
-.phoenix/phoenix-job-assistant/src/phoenix_job_assistant/interfaces/api/v1/routers.py
-```
-
-The focused backend tests live in:
-
-```text
-.phoenix/phoenix-job-assistant/tests/interfaces/api/v1/test_pilot_block.py
-```
-
-Run the targeted backend tests from `.phoenix/phoenix-job-assistant`:
-
-```bash
-uv run --with pytest --with pytest-asyncio --with aiosqlite --with aio-pika --with ../phoenix-lib pytest tests/interfaces/api/v1/test_pilot_block.py
-```
-
-## Frontend Tests
-
-There is currently no frontend test harness for the root Chrome extension package:
-
-- No `npm test` script.
-- No Vitest, Jest, or Playwright config.
-- No root extension `*.test.*` or `*.spec.*` files.
-
-Current frontend verification is build-only:
-
-```bash
-npm run build
-```
-
-The separate Phoenix webapp under `.phoenix/phoenix-job-assistant-webapp/` does have its own Vitest and Playwright setup, but that is not the Chrome extension frontend.
-
-## Useful Scripts
+Useful commands:
 
 ```bash
 npm run dev      # Vite dev build
@@ -115,15 +172,56 @@ npm run preview  # Preview built assets
 npm run zip      # Build and package extension zip
 ```
 
-## Project Notes
+The root extension package currently has no dedicated frontend test runner. Use `npm run build` as the baseline verification.
 
-- `src/utils/llm-client.ts` is still used for comments, posts, refinement, and persona learning.
-- `src/utils/phoenix-client.ts` is used for Phoenix session listing, connection testing, communication-history sync, and DM reply generation.
-- The extension build output is `phoenix_pilot_ready_for_chrome/`.
+Backend syntax check used for touched Phoenix Python files:
 
-## Acknowledgement
+```bash
+python3 -m py_compile \
+  .phoenix/phoenix-job-assistant/src/phoenix_job_assistant/interfaces/api/v1/auth.py \
+  .phoenix/phoenix-job-assistant/src/phoenix_job_assistant/interfaces/api/deps.py \
+  .phoenix/phoenix-job-assistant/src/phoenix_job_assistant/interfaces/api/app.py
+```
 
-Phoenix Pilot is built on top of LiPilot, the original open-source LinkedIn AI assistant. LiPilot provided the Chrome extension foundation, LinkedIn content-script integration, local LLM provider support, comment generation flow, messaging panel, popup, options UI, and build pipeline that Phoenix Pilot adapts for job-seeker workflows and Phoenix-powered DM generation.
+## Troubleshooting
+
+**No sessions available**
+
+- Confirm you are logged in to Phoenix in the same browser profile.
+- Open extension Settings and click **Check Login**.
+- Confirm the Phoenix API base URL points to the backend that owns your login cookies.
+- Confirm the backend allows credentialed requests from the Chrome extension origin.
+
+**Generate fails with missing honest context**
+
+- Open the selected Phoenix session in the Phoenix webapp.
+- Add or update honest job preferences/context.
+- Retry generation from LinkedIn Messaging.
+
+**Login works on the website but not in the extension**
+
+- Confirm cookies are set for the API domain, not only the webapp domain.
+- In production, cookies used by extension requests must be `SameSite=None; Secure`.
+- Confirm CORS responses include both `Access-Control-Allow-Origin: chrome-extension://...` and `Access-Control-Allow-Credentials: true`.
+
+**Reply button does not appear**
+
+- Confirm the current page is LinkedIn Messaging, not the feed.
+- Refresh the LinkedIn tab after loading or updating the extension.
+- Check that the content script is loaded for `https://www.linkedin.com/*`.
+
+## Removed Features
+
+The following legacy LiPilot/Phoenix Pilot surfaces have been removed from the extension:
+
+- LinkedIn feed comment generation
+- Comment refinement
+- Local persona learning
+- Image analysis
+- LinkedIn post generation
+- OpenAI, Anthropic, and Gemini direct API calls
+- Provider API-key storage
+- Manual Phoenix bearer-token storage
 
 ## License
 

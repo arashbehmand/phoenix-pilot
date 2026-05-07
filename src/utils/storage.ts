@@ -1,57 +1,49 @@
-import { UserSettings, HistoryEntry, CommentFeedback, PersonaObservation } from '../types';
+import type { UserSettings } from '../types';
 
 const STORAGE_KEYS = {
-  LLM_PROVIDER: 'llm_provider',
-  API_KEY: 'openai_api_key',
-  MODEL: 'llm_model',
-  PERSONA: 'user_persona',
-  HISTORY: 'comment_history',
-  ENABLE_EMOJIS: 'enable_emojis',
-  LANGUAGE_LEVEL: 'language_level',
-  ENABLE_IMAGE_ANALYSIS: 'enable_image_analysis',
-  JOB_SEARCH_CONTEXT: 'job_search_context',
   PHOENIX_BASE_URL: 'phoenix_base_url',
-  PHOENIX_TOKEN: 'phoenix_token',
-  PHOENIX_USER_ID: 'phoenix_user_id',
   PHOENIX_SESSION_ID: 'phoenix_session_id',
   PHOENIX_SESSION_NAME: 'phoenix_session_name',
-  FEEDBACK: 'comment_feedback',
-  PERSONA_OBSERVATIONS: 'persona_observations',
 } as const;
 
-const MAX_HISTORY_ENTRIES = 10;
-const MAX_PERSONA_OBSERVATIONS = 20;
+const LEGACY_KEYS = [
+  'llm_provider',
+  'openai_api_key',
+  'llm_model',
+  'user_persona',
+  'enable_emojis',
+  'language_level',
+  'enable_image_analysis',
+  'job_search_context',
+  'phoenix_token',
+  'phoenix_user_id',
+  'comment_history',
+  'comment_feedback',
+  'persona_observations',
+  'service_description',
+  'auth_token',
+  'server_url',
+  'use_backend',
+  'auth_step',
+  'auth_userEmail',
+  'extension_user_email',
+  'fullenrich_api_key',
+] as const;
 
 const DEFAULT_SETTINGS: UserSettings = {
-  llmProvider: 'openai',
-  apiKey: '',
-  model: 'gpt-4o-mini',
-  persona: '',
-  enableEmojis: false,
-  languageLevel: 'fluent',
-  enableImageAnalysis: false,
-  jobSearchContext: '',
-  phoenixBaseUrl: '',
-  phoenixToken: '',
-  phoenixUserId: '',
+  phoenixBaseUrl: 'https://api.phoenix0.online',
   phoenixSessionId: '',
   phoenixSessionName: '',
 };
 
-/**
- * Check if the extension context is still valid
- */
 function isExtensionContextValid(): boolean {
   try {
-    return !!(chrome?.runtime?.id);
+    return !!chrome?.runtime?.id;
   } catch {
     return false;
   }
 }
 
-/**
- * Safely execute a chrome storage operation with error handling
- */
 async function safeStorageOperation<T>(
   operation: () => Promise<T>,
   fallback: T
@@ -74,353 +66,104 @@ async function safeStorageOperation<T>(
 
 export async function getSettings(): Promise<UserSettings> {
   return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get([
-        STORAGE_KEYS.LLM_PROVIDER,
-        STORAGE_KEYS.API_KEY,
-        STORAGE_KEYS.MODEL,
-        STORAGE_KEYS.PERSONA,
-        STORAGE_KEYS.ENABLE_EMOJIS,
-        STORAGE_KEYS.LANGUAGE_LEVEL,
-        STORAGE_KEYS.ENABLE_IMAGE_ANALYSIS,
-        STORAGE_KEYS.JOB_SEARCH_CONTEXT,
-        STORAGE_KEYS.PHOENIX_BASE_URL,
-        STORAGE_KEYS.PHOENIX_TOKEN,
-        STORAGE_KEYS.PHOENIX_USER_ID,
-        STORAGE_KEYS.PHOENIX_SESSION_ID,
-        STORAGE_KEYS.PHOENIX_SESSION_NAME,
-      ], (result) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-          resolve(DEFAULT_SETTINGS);
-          return;
-        }
-        resolve({
-          llmProvider: result[STORAGE_KEYS.LLM_PROVIDER] || 'openai',
-          apiKey: result[STORAGE_KEYS.API_KEY] || '',
-          model: result[STORAGE_KEYS.MODEL] || 'gpt-4o-mini',
-          persona: result[STORAGE_KEYS.PERSONA] || '',
-          enableEmojis: result[STORAGE_KEYS.ENABLE_EMOJIS] ?? false,
-          languageLevel: result[STORAGE_KEYS.LANGUAGE_LEVEL] || 'fluent',
-          enableImageAnalysis: result[STORAGE_KEYS.ENABLE_IMAGE_ANALYSIS] ?? false,
-          jobSearchContext: result[STORAGE_KEYS.JOB_SEARCH_CONTEXT] || '',
-          phoenixBaseUrl: result[STORAGE_KEYS.PHOENIX_BASE_URL] || '',
-          phoenixToken: result[STORAGE_KEYS.PHOENIX_TOKEN] || '',
-          phoenixUserId: result[STORAGE_KEYS.PHOENIX_USER_ID] || '',
-          phoenixSessionId: result[STORAGE_KEYS.PHOENIX_SESSION_ID] || '',
-          phoenixSessionName: result[STORAGE_KEYS.PHOENIX_SESSION_NAME] || '',
-        });
-      });
-    }),
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.get(
+          [
+            STORAGE_KEYS.PHOENIX_BASE_URL,
+            STORAGE_KEYS.PHOENIX_SESSION_ID,
+            STORAGE_KEYS.PHOENIX_SESSION_NAME,
+          ],
+          (result) => {
+            if (chrome.runtime.lastError) {
+              console.warn('Storage error:', chrome.runtime.lastError);
+              resolve(DEFAULT_SETTINGS);
+              return;
+            }
+
+            resolve({
+              phoenixBaseUrl: result[STORAGE_KEYS.PHOENIX_BASE_URL] || DEFAULT_SETTINGS.phoenixBaseUrl,
+              phoenixSessionId: result[STORAGE_KEYS.PHOENIX_SESSION_ID] || '',
+              phoenixSessionName: result[STORAGE_KEYS.PHOENIX_SESSION_NAME] || '',
+            });
+          }
+        );
+      }),
     DEFAULT_SETTINGS
   );
 }
 
 export async function saveSettings(settings: UserSettings): Promise<void> {
   return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.set(
-        {
-          [STORAGE_KEYS.LLM_PROVIDER]: settings.llmProvider,
-          [STORAGE_KEYS.API_KEY]: settings.apiKey,
-          [STORAGE_KEYS.MODEL]: settings.model,
-          [STORAGE_KEYS.PERSONA]: settings.persona,
-          [STORAGE_KEYS.ENABLE_EMOJIS]: settings.enableEmojis,
-          [STORAGE_KEYS.LANGUAGE_LEVEL]: settings.languageLevel,
-          [STORAGE_KEYS.ENABLE_IMAGE_ANALYSIS]: settings.enableImageAnalysis,
-          [STORAGE_KEYS.JOB_SEARCH_CONTEXT]: settings.jobSearchContext,
-          [STORAGE_KEYS.PHOENIX_BASE_URL]: settings.phoenixBaseUrl,
-          [STORAGE_KEYS.PHOENIX_TOKEN]: settings.phoenixToken,
-          [STORAGE_KEYS.PHOENIX_USER_ID]: settings.phoenixUserId,
-          [STORAGE_KEYS.PHOENIX_SESSION_ID]: settings.phoenixSessionId,
-          [STORAGE_KEYS.PHOENIX_SESSION_NAME]: settings.phoenixSessionName,
-        },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.set(
+          {
+            [STORAGE_KEYS.PHOENIX_BASE_URL]: settings.phoenixBaseUrl,
+            [STORAGE_KEYS.PHOENIX_SESSION_ID]: settings.phoenixSessionId,
+            [STORAGE_KEYS.PHOENIX_SESSION_NAME]: settings.phoenixSessionName,
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.warn('Storage error:', chrome.runtime.lastError);
+            }
+            resolve();
           }
-          resolve();
-        }
-      );
-    }),
+        );
+      }),
     undefined
   );
 }
 
-export async function clearSettings(): Promise<void> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.remove(
-        [STORAGE_KEYS.API_KEY, STORAGE_KEYS.PERSONA, STORAGE_KEYS.ENABLE_EMOJIS],
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
-          }
-          resolve();
-        }
-      );
-    }),
-    undefined
-  );
-}
-
-export async function getApiKey(): Promise<string> {
+export async function savePhoenixSession(sessionId: string, sessionName: string): Promise<void> {
   const settings = await getSettings();
-  return settings.apiKey;
+  await saveSettings({
+    ...settings,
+    phoenixSessionId: sessionId,
+    phoenixSessionName: sessionName,
+  });
 }
-
-export async function getPersona(): Promise<string> {
-  const settings = await getSettings();
-  return settings.persona;
-}
-
-// ==================== Persona Observations ====================
-
-export async function getPersonaObservations(): Promise<PersonaObservation[]> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get([STORAGE_KEYS.PERSONA_OBSERVATIONS], (result) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-          resolve([]);
-          return;
-        }
-        resolve(result[STORAGE_KEYS.PERSONA_OBSERVATIONS] || []);
-      });
-    }),
-    []
-  );
-}
-
-export async function addPersonaObservation(observationText: string): Promise<void> {
-  if (!isExtensionContextValid()) return;
-
-  const observations = await getPersonaObservations();
-
-  const newObservation: PersonaObservation = {
-    text: observationText,
-    timestamp: Date.now(),
-  };
-
-  const updated = [newObservation, ...observations].slice(0, MAX_PERSONA_OBSERVATIONS);
-
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.set(
-        { [STORAGE_KEYS.PERSONA_OBSERVATIONS]: updated },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
-          }
-          resolve();
-        }
-      );
-    }),
-    undefined
-  );
-}
-
-export async function clearPersonaObservations(): Promise<void> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.remove([STORAGE_KEYS.PERSONA_OBSERVATIONS], () => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-        }
-        resolve();
-      });
-    }),
-    undefined
-  );
-}
-
-// ==================== History Management ====================
-
-export async function getHistory(): Promise<HistoryEntry[]> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get([STORAGE_KEYS.HISTORY], (result) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-          resolve([]);
-          return;
-        }
-        resolve(result[STORAGE_KEYS.HISTORY] || []);
-      });
-    }),
-    []
-  );
-}
-
-export async function addToHistory(comment: string, postPreview: string): Promise<void> {
-  if (!isExtensionContextValid()) {
-    console.warn('Extension context invalidated. Cannot save to history.');
-    return;
-  }
-
-  const history = await getHistory();
-
-  const newEntry: HistoryEntry = {
-    id: Date.now().toString(),
-    comment,
-    postPreview: postPreview.slice(0, 100),
-    timestamp: Date.now(),
-  };
-
-  const updatedHistory = [newEntry, ...history].slice(0, MAX_HISTORY_ENTRIES);
-
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.set(
-        { [STORAGE_KEYS.HISTORY]: updatedHistory },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
-          }
-          resolve();
-        }
-      );
-    }),
-    undefined
-  );
-}
-
-export async function removeFromHistory(id: string): Promise<void> {
-  if (!isExtensionContextValid()) {
-    console.warn('Extension context invalidated. Cannot modify history.');
-    return;
-  }
-
-  const history = await getHistory();
-  const updatedHistory = history.filter((entry) => entry.id !== id);
-
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.set(
-        { [STORAGE_KEYS.HISTORY]: updatedHistory },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
-          }
-          resolve();
-        }
-      );
-    }),
-    undefined
-  );
-}
-
-export async function clearHistory(): Promise<void> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.remove([STORAGE_KEYS.HISTORY], () => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-        }
-        resolve();
-      });
-    }),
-    undefined
-  );
-}
-
-// ==================== Feedback Management ====================
-
-const MAX_FEEDBACK_ENTRIES = 100;
-
-export async function getFeedback(): Promise<CommentFeedback[]> {
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get([STORAGE_KEYS.FEEDBACK], (result) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError);
-          resolve([]);
-          return;
-        }
-        resolve(result[STORAGE_KEYS.FEEDBACK] || []);
-      });
-    }),
-    []
-  );
-}
-
-export async function saveFeedback(feedback: CommentFeedback): Promise<void> {
-  if (!isExtensionContextValid()) {
-    console.warn('Extension context invalidated. Cannot save feedback.');
-    return;
-  }
-
-  const existingFeedback = await getFeedback();
-  const updatedFeedback = [feedback, ...existingFeedback].slice(0, MAX_FEEDBACK_ENTRIES);
-
-  return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.set(
-        { [STORAGE_KEYS.FEEDBACK]: updatedFeedback },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn('Storage error:', chrome.runtime.lastError);
-          }
-          resolve();
-        }
-      );
-    }),
-    undefined
-  );
-}
-
-export async function getFeedbackStats(): Promise<{ positive: number; negative: number }> {
-  const feedback = await getFeedback();
-  return {
-    positive: feedback.filter(f => f.isPositive).length,
-    negative: feedback.filter(f => !f.isPositive).length,
-  };
-}
-
-// ==================== Migration ====================
 
 export async function migrateFromSaaSVersion(): Promise<void> {
   return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get(['migration_v2_done'], (result) => {
-        if (result.migration_v2_done) {
-          resolve();
-          return;
-        }
-        // Clean up old SaaS keys
-        chrome.storage.local.remove([
-          'auth_token', 'server_url', 'use_backend',
-          'auth_step', 'auth_userEmail', 'extension_user_email',
-          'fullenrich_api_key',
-        ], () => {
-          chrome.storage.local.set({ migration_v2_done: true }, () => {
-            console.log('[Phoenix Pilot] Migration from SaaS version completed');
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.get(['migration_v2_done'], (result) => {
+          if (result.migration_v2_done) {
             resolve();
+            return;
+          }
+
+          chrome.storage.local.remove([...LEGACY_KEYS], () => {
+            chrome.storage.local.set({ migration_v2_done: true }, () => {
+              console.log('[Phoenix Pilot] Legacy SaaS settings removed');
+              resolve();
+            });
           });
         });
-      });
-    }),
+      }),
     undefined
   );
 }
 
 export async function migrateFromSalesVersion(): Promise<void> {
   return safeStorageOperation(
-    () => new Promise((resolve) => {
-      chrome.storage.local.get(['migration_phoenix_pilot_done'], (result) => {
-        if (result.migration_phoenix_pilot_done) {
-          resolve();
-          return;
-        }
-
-        chrome.storage.local.remove(['service_description'], () => {
-          chrome.storage.local.set({ migration_phoenix_pilot_done: true }, () => {
-            console.log('[Phoenix Pilot] Migration from sales version completed');
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.get(['migration_phoenix_pilot_done'], (result) => {
+          if (result.migration_phoenix_pilot_done) {
             resolve();
+            return;
+          }
+
+          chrome.storage.local.remove([...LEGACY_KEYS], () => {
+            chrome.storage.local.set({ migration_phoenix_pilot_done: true }, () => {
+              console.log('[Phoenix Pilot] Legacy local generation settings removed');
+              resolve();
+            });
           });
         });
-      });
-    }),
+      }),
     undefined
   );
 }

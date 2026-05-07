@@ -1,56 +1,44 @@
-import { useState, useEffect } from 'react';
-import { getSettings, saveSettings, getPersonaObservations, clearPersonaObservations } from '../utils/storage';
-import { testLLMConnection } from '../utils/llm-client';
-import { fetchPhoenixSessions, testPhoenixConnection } from '../utils/phoenix-client';
-import type { LLMProvider, UserSettings, LanguageLevel, PhoenixSession } from '../types';
-import { PROVIDER_MODELS, PROVIDER_LABELS, LANGUAGE_LEVEL_OPTIONS } from '../types';
+import { useEffect, useState } from 'react';
+import { getSettings, saveSettings } from '../utils/storage';
+import { getPhoenixUser, testPhoenixConnection } from '../utils/phoenix-client';
+import type { UserSettings } from '../types';
+
+const DEFAULT_SETTINGS: UserSettings = {
+  phoenixBaseUrl: 'https://api.phoenix0.online',
+  phoenixSessionId: '',
+  phoenixSessionName: '',
+};
 
 export default function App() {
-  const [settings, setSettings] = useState<UserSettings>({
-    llmProvider: 'openai',
-    apiKey: '',
-    model: 'gpt-4o',
-    persona: '',
-    enableEmojis: false,
-    languageLevel: 'fluent',
-    enableImageAnalysis: false,
-    jobSearchContext: '',
-    phoenixBaseUrl: '',
-    phoenixToken: '',
-    phoenixUserId: '',
-    phoenixSessionId: '',
-    phoenixSessionName: '',
-  });
-
-  const [observations, setObservations] = useState<{ text: string; timestamp: number }[]>([]);
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; error?: string } | null>(null);
-  const [isTestingPhoenix, setIsTestingPhoenix] = useState(false);
-  const [phoenixTestResult, setPhoenixTestResult] = useState<
-    { success: boolean; error?: string; sessionCount?: number } | null
-  >(null);
-  const [phoenixSessions, setPhoenixSessions] = useState<PhoenixSession[]>([]);
+  const [isChecking, setIsChecking] = useState(false);
+  const [status, setStatus] = useState<{ success: boolean; email?: string; error?: string; sessionCount?: number } | null>(null);
 
   useEffect(() => {
-    getSettings().then((s) => {
-      setSettings(s);
-      if (s.phoenixBaseUrl && s.phoenixToken) {
-        fetchPhoenixSessions(s.phoenixBaseUrl, s.phoenixToken).then(setPhoenixSessions);
-      }
+    getSettings().then((storedSettings) => {
+      setSettings(storedSettings);
+      checkLogin(storedSettings.phoenixBaseUrl);
     });
-    getPersonaObservations().then((obs) => setObservations(obs));
   }, []);
 
-  const handleProviderChange = (provider: LLMProvider) => {
-    const models = PROVIDER_MODELS[provider];
-    setSettings((prev) => ({
-      ...prev,
-      llmProvider: provider,
-      model: models[0].value,
-    }));
-    setTestResult(null);
+  const checkLogin = async (baseUrl = settings.phoenixBaseUrl) => {
+    setIsChecking(true);
+    const user = await getPhoenixUser(baseUrl);
+    if (!user.success) {
+      setStatus({ success: false, error: user.error || 'Not logged in to Phoenix.' });
+      setIsChecking(false);
+      return;
+    }
+
+    const sessions = await testPhoenixConnection(baseUrl);
+    setStatus({
+      success: true,
+      email: user.email,
+      sessionCount: sessions.sessionCount,
+    });
+    setIsChecking(false);
   };
 
   const handleSave = async () => {
@@ -59,356 +47,74 @@ export default function App() {
     await saveSettings(settings);
     setSaveSuccess(true);
     setIsSaving(false);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setTimeout(() => setSaveSuccess(false), 2500);
+    checkLogin(settings.phoenixBaseUrl);
   };
 
-  const handleTestConnection = async () => {
-    setIsTesting(true);
-    setTestResult(null);
-    const result = await testLLMConnection(settings.llmProvider, settings.apiKey, settings.model);
-    setTestResult(result);
-    setIsTesting(false);
+  const openPhoenixLogin = () => {
+    const webUrl = settings.phoenixBaseUrl
+      .replace(/\/+$/, '')
+      .replace('://api.', '://')
+      .replace(':8000', ':5173');
+    chrome.tabs.create({ url: `${webUrl}/login` });
   };
-
-  const handleTestPhoenix = async () => {
-    setIsTestingPhoenix(true);
-    setPhoenixTestResult(null);
-    const result = await testPhoenixConnection(
-      settings.phoenixBaseUrl,
-      settings.phoenixToken,
-      settings.phoenixUserId
-    );
-    setPhoenixTestResult(result);
-    if (result.success) {
-      const sessions = await fetchPhoenixSessions(settings.phoenixBaseUrl, settings.phoenixToken);
-      setPhoenixSessions(sessions);
-    }
-    setIsTestingPhoenix(false);
-  };
-
-  const handlePhoenixSessionChange = (sessionId: string) => {
-    const selected = phoenixSessions.find((session) => session.id === sessionId);
-    setSettings((prev) => {
-      const updated = {
-        ...prev,
-        phoenixSessionId: sessionId,
-        phoenixSessionName: selected?.display_name || '',
-      };
-      saveSettings(updated);
-      return updated;
-    });
-  };
-
-  const handleClearObservations = async () => {
-    await clearPersonaObservations();
-    setObservations([]);
-  };
-
-  const currentModels = PROVIDER_MODELS[settings.llmProvider] || [];
 
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        {/* Header */}
         <div style={styles.header}>
           <div style={styles.iconWrapper}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
             </svg>
           </div>
           <h1 style={styles.title}>Phoenix Pilot Settings</h1>
-          <p style={styles.subtitle}>Configure your AI job search assistant for LinkedIn</p>
+          <p style={styles.subtitle}>Phoenix login powers LinkedIn message replies.</p>
         </div>
 
-        {/* Main Card */}
         <div style={styles.card}>
-          {/* LLM Provider */}
           <div style={styles.section}>
-            <label style={styles.label}>LLM Provider</label>
-            <div style={styles.providerGrid}>
-              {(Object.keys(PROVIDER_LABELS) as LLMProvider[]).map((provider) => (
-                <button
-                  key={provider}
-                  onClick={() => handleProviderChange(provider)}
-                  style={{
-                    ...styles.providerButton,
-                    ...(settings.llmProvider === provider ? styles.providerButtonActive : {}),
-                  }}
-                >
-                  {PROVIDER_LABELS[provider]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* API Key */}
-          <div style={styles.section}>
-            <label style={styles.label}>API Key</label>
-            <div style={styles.apiKeyRow}>
-              <input
-                type="password"
-                value={settings.apiKey}
-                onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
-                placeholder={`Enter your ${PROVIDER_LABELS[settings.llmProvider]} API key`}
-                style={styles.input}
-              />
-              <button
-                onClick={handleTestConnection}
-                disabled={isTesting || !settings.apiKey}
-                style={{
-                  ...styles.testButton,
-                  opacity: isTesting || !settings.apiKey ? 0.5 : 1,
-                }}
-              >
-                {isTesting ? 'Testing...' : 'Test'}
-              </button>
-            </div>
-            {testResult && (
-              <div
-                style={{
-                  ...styles.testResult,
-                  background: testResult.success ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  borderColor: testResult.success ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)',
-                  color: testResult.success ? '#4ade80' : '#fca5a5',
-                }}
-              >
-                {testResult.success ? 'Connection successful!' : testResult.error || 'Connection failed'}
-              </div>
-            )}
-          </div>
-
-          {/* Model */}
-          <div style={styles.section}>
-            <label style={styles.label}>Model</label>
-            <select
-              value={settings.model}
-              onChange={(e) => setSettings((prev) => ({ ...prev, model: e.target.value }))}
-              style={styles.select}
-            >
-              {currentModels.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Divider */}
-          <div style={styles.divider} />
-
-          {/* Persona */}
-          <div style={styles.section}>
-            <label style={styles.label}>Persona</label>
-            <p style={styles.hint}>Describe yourself, your role, expertise, and communication style. This helps the AI generate comments that sound like you.</p>
-            <textarea
-              value={settings.persona}
-              onChange={(e) => setSettings((prev) => ({ ...prev, persona: e.target.value }))}
-              placeholder="e.g., I'm a startup founder building AI tools for marketing. I speak directly, avoid buzzwords, and love sharing practical insights from my experience..."
-              rows={5}
-              style={styles.textarea}
+            <label style={styles.label}>Phoenix API Base URL</label>
+            <p style={styles.hint}>Production uses Phoenix automatically. Change this only for local development.</p>
+            <input
+              type="url"
+              value={settings.phoenixBaseUrl}
+              onChange={(e) => setSettings((prev) => ({ ...prev, phoenixBaseUrl: e.target.value }))}
+              placeholder="https://api.phoenix0.online"
+              style={styles.input}
             />
           </div>
 
-          {/* Language Level */}
-          <div style={styles.section}>
-            <label style={styles.label}>Language Level</label>
-            <select
-              value={settings.languageLevel}
-              onChange={(e) => setSettings((prev) => ({ ...prev, languageLevel: e.target.value as LanguageLevel }))}
-              style={styles.select}
-            >
-              {LANGUAGE_LEVEL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label} — {opt.description}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Toggles */}
-          <div style={styles.section}>
-            <div style={styles.toggleRow}>
-              <div>
-                <div style={styles.toggleLabel}>Enable Emojis</div>
-                <div style={styles.toggleHint}>Allow emojis in generated comments</div>
-              </div>
-              <button
-                onClick={() => setSettings((prev) => ({ ...prev, enableEmojis: !prev.enableEmojis }))}
-                style={{
-                  ...styles.toggle,
-                  background: settings.enableEmojis
-                    ? 'linear-gradient(135deg, #0a66c2, #00a0dc)'
-                    : 'rgba(255,255,255,0.1)',
-                }}
-              >
-                <span
-                  style={{
-                    ...styles.toggleKnob,
-                    transform: settings.enableEmojis ? 'translateX(20px)' : 'translateX(0)',
-                  }}
-                />
-              </button>
-            </div>
-
-            <div style={{ ...styles.toggleRow, marginTop: 16 }}>
-              <div>
-                <div style={styles.toggleLabel}>Image Analysis</div>
-                <div style={styles.toggleHint}>Analyze images attached to posts for better context</div>
-              </div>
-              <button
-                onClick={() => setSettings((prev) => ({ ...prev, enableImageAnalysis: !prev.enableImageAnalysis }))}
-                style={{
-                  ...styles.toggle,
-                  background: settings.enableImageAnalysis
-                    ? 'linear-gradient(135deg, #0a66c2, #00a0dc)'
-                    : 'rgba(255,255,255,0.1)',
-                }}
-              >
-                <span
-                  style={{
-                    ...styles.toggleKnob,
-                    transform: settings.enableImageAnalysis ? 'translateX(20px)' : 'translateX(0)',
-                  }}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Job Search Context */}
-          <div style={styles.section}>
-            <label style={styles.label}>Job Search Context <span style={styles.optional}>(optional)</span></label>
-            <p style={styles.hint}>Used in AI-generated comments to subtly position you without sounding like you're actively job hunting.</p>
-            <textarea
-              value={settings.jobSearchContext}
-              onChange={(e) => setSettings((prev) => ({ ...prev, jobSearchContext: e.target.value }))}
-              placeholder="e.g., Transitioning from PM to AI engineering. Targeting Series B startups in climate tech..."
-              rows={4}
-              style={styles.textarea}
-            />
-          </div>
-
-          {/* Phoenix */}
-          <div style={styles.section}>
-            <label style={styles.label}>Phoenix - Message Generation</label>
-            <p style={styles.hint}>Connect a Phoenix session so LinkedIn DMs are generated using your resume and honest job preferences.</p>
-
-            <div style={styles.fieldStack}>
-              <input
-                type="url"
-                value={settings.phoenixBaseUrl}
-                onChange={(e) => setSettings((prev) => ({ ...prev, phoenixBaseUrl: e.target.value }))}
-                placeholder="http://localhost:8000"
-                style={styles.input}
-              />
-              <input
-                type="text"
-                value={settings.phoenixUserId}
-                onChange={(e) => setSettings((prev) => ({ ...prev, phoenixUserId: e.target.value }))}
-                placeholder="Phoenix user ID"
-                style={styles.input}
-              />
-              <div style={styles.apiKeyRow}>
-                <input
-                  type="password"
-                  value={settings.phoenixToken}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, phoenixToken: e.target.value }))}
-                  placeholder="Phoenix bearer token"
-                  style={styles.input}
-                />
-                <button
-                  onClick={handleTestPhoenix}
-                  disabled={isTestingPhoenix || !settings.phoenixBaseUrl || !settings.phoenixToken}
-                  style={{
-                    ...styles.testButton,
-                    opacity: isTestingPhoenix || !settings.phoenixBaseUrl || !settings.phoenixToken ? 0.5 : 1,
-                  }}
-                >
-                  {isTestingPhoenix ? 'Testing...' : 'Test'}
-                </button>
-              </div>
-            </div>
-
-            {phoenixTestResult && (
-              <div
-                style={{
-                  ...styles.testResult,
-                  background: phoenixTestResult.success ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  borderColor: phoenixTestResult.success ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)',
-                  color: phoenixTestResult.success ? '#4ade80' : '#fca5a5',
-                }}
-              >
-                {phoenixTestResult.success
-                  ? `Connected - ${phoenixTestResult.sessionCount ?? 0} sessions available`
-                  : phoenixTestResult.error || 'Connection failed'}
-              </div>
-            )}
-
-            <div style={{ marginTop: 12 }}>
-              <label style={styles.smallLabel}>Active Session</label>
-              <select
-                value={settings.phoenixSessionId}
-                onChange={(e) => handlePhoenixSessionChange(e.target.value)}
-                style={styles.select}
-              >
-                <option value="">Select a Phoenix session</option>
-                {phoenixSessions.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {session.display_name}
-                  </option>
-                ))}
-              </select>
-              <p style={styles.hint}>Note: The session must have an honest context configured.</p>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={styles.divider} />
-
-          {/* Learned Traits */}
-          <div style={styles.section}>
-            <div style={styles.learnedHeader}>
-              <div>
-                <label style={styles.label}>Learned Preferences</label>
-                <p style={styles.hint}>The AI learns from your edits to improve future suggestions.</p>
-              </div>
-              {observations.length > 0 && (
-                <button onClick={handleClearObservations} style={styles.clearButton}>
-                  Clear All
-                </button>
-              )}
-            </div>
-            {observations.length === 0 ? (
-              <div style={styles.emptyState}>
-                No learned preferences yet. The AI will learn as you edit and use its suggestions.
-              </div>
-            ) : (
-              <div style={styles.observationsList}>
-                {observations.map((obs, i) => (
-                  <div key={i} style={styles.observationItem}>
-                    <div style={styles.observationText}>{obs.text}</div>
-                    <div style={styles.observationTime}>
-                      {new Date(obs.timestamp).toLocaleDateString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Save Button */}
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
+          <div
             style={{
-              ...styles.saveButton,
-              opacity: isSaving ? 0.7 : 1,
+              ...styles.statusBox,
+              ...(status?.success ? styles.statusSuccess : styles.statusWarning),
             }}
           >
+            <div style={styles.statusTitle}>
+              {isChecking ? 'Checking Phoenix login...' : status?.success ? 'Logged in to Phoenix' : 'Phoenix login required'}
+            </div>
+            <div style={styles.statusText}>
+              {status?.success
+                ? `${status.email || 'Phoenix account'} · ${status.sessionCount ?? 0} sessions available`
+                : status?.error || 'Log in on the Phoenix website, then return to LinkedIn.'}
+            </div>
+          </div>
+
+          <div style={styles.buttonRow}>
+            <button onClick={openPhoenixLogin} style={styles.primaryButton}>
+              Open Phoenix Login
+            </button>
+            <button onClick={() => checkLogin()} disabled={isChecking} style={styles.secondaryButton}>
+              {isChecking ? 'Checking...' : 'Check Login'}
+            </button>
+          </div>
+
+          <button onClick={handleSave} disabled={isSaving} style={styles.saveButton}>
             {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Settings'}
           </button>
         </div>
 
-        {/* Footer */}
         <div style={styles.footer}>
           <span>Phoenix Pilot - AI job search assistant for LinkedIn</span>
         </div>
@@ -429,7 +135,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 auto',
   },
   header: {
-    textAlign: 'center' as const,
+    textAlign: 'center',
     marginBottom: 40,
   },
   iconWrapper: {
@@ -458,239 +164,103 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(255,255,255,0.05)',
     backdropFilter: 'blur(20px)',
     borderRadius: 20,
-    border: '1px solid rgba(255,255,255,0.1)',
     padding: 32,
-    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
   },
   section: {
     marginBottom: 24,
   },
   label: {
     display: 'block',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 600,
-    color: '#e5e7eb',
+    color: '#fff',
     marginBottom: 8,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  smallLabel: {
-    display: 'block',
-    fontSize: 12,
-    fontWeight: 600,
-    color: '#cbd5e1',
-    marginBottom: 6,
   },
   hint: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 8,
+    fontSize: 13,
+    color: '#9ca3af',
+    margin: '0 0 12px',
     lineHeight: 1.5,
   },
-  optional: {
-    fontWeight: 400,
-    color: '#6b7280',
-    fontSize: 11,
-    textTransform: 'none' as const,
-  },
-  providerGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: 8,
-  },
-  providerButton: {
-    padding: '12px 8px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 10,
-    color: '#9ca3af',
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  providerButtonActive: {
-    background: 'rgba(10,102,194,0.2)',
-    borderColor: '#0a66c2',
-    color: '#60a5fa',
-    fontWeight: 600,
-  },
-  apiKeyRow: {
-    display: 'flex',
-    gap: 8,
-  },
-  fieldStack: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 10,
-  },
   input: {
-    flex: 1,
-    padding: '10px 14px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 10,
-    color: '#fff',
-    fontSize: 14,
-    outline: 'none',
-    fontFamily: 'inherit',
-  },
-  select: {
     width: '100%',
-    padding: '10px 14px',
-    background: '#1a1a2e',
-    border: '1px solid rgba(255,255,255,0.1)',
+    padding: '12px 16px',
     borderRadius: 10,
-    color: '#fff',
-    fontSize: 14,
-    cursor: 'pointer',
-    outline: 'none',
-    fontFamily: 'inherit',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 14px',
+    border: '1px solid rgba(255,255,255,0.1)',
     background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 10,
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'inherit',
-    resize: 'vertical' as const,
-    lineHeight: 1.6,
     outline: 'none',
-    boxSizing: 'border-box' as const,
+    boxSizing: 'border-box',
   },
-  testButton: {
-    padding: '10px 20px',
-    background: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: 10,
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap' as const,
-  },
-  testResult: {
-    marginTop: 8,
-    padding: '8px 12px',
-    borderRadius: 8,
-    border: '1px solid',
-    fontSize: 13,
-  },
-  divider: {
-    height: 1,
-    background: 'rgba(255,255,255,0.08)',
-    margin: '28px 0',
-  },
-  toggleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  toggleLabel: {
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#e5e7eb',
-  },
-  toggleHint: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  toggle: {
-    width: 44,
-    height: 24,
+  statusBox: {
+    padding: 16,
     borderRadius: 12,
-    border: 'none',
-    cursor: 'pointer',
-    position: 'relative' as const,
-    transition: 'background 0.2s',
-    flexShrink: 0,
+    border: '1px solid',
+    marginBottom: 20,
   },
-  toggleKnob: {
-    position: 'absolute' as const,
-    top: 2,
-    left: 2,
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    background: '#fff',
-    transition: 'transform 0.2s',
-    display: 'block',
+  statusSuccess: {
+    background: 'rgba(34, 197, 94, 0.1)',
+    borderColor: 'rgba(34, 197, 94, 0.25)',
   },
-  learnedHeader: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 16,
+  statusWarning: {
+    background: 'rgba(251, 191, 36, 0.1)',
+    borderColor: 'rgba(251, 191, 36, 0.25)',
   },
-  clearButton: {
-    padding: '6px 12px',
-    background: 'transparent',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: 6,
-    color: '#ef4444',
-    fontSize: 12,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap' as const,
-    flexShrink: 0,
-    marginTop: 2,
+  statusTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#fff',
+    marginBottom: 4,
   },
-  emptyState: {
-    padding: 20,
-    textAlign: 'center' as const,
-    color: '#6b7280',
-    fontSize: 13,
-    background: 'rgba(255,255,255,0.03)',
-    borderRadius: 10,
-    border: '1px dashed rgba(255,255,255,0.1)',
-  },
-  observationsList: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 8,
-    marginTop: 8,
-  },
-  observationItem: {
-    padding: '10px 12px',
-    background: 'rgba(255,255,255,0.05)',
-    borderRadius: 8,
-    border: '1px solid rgba(255,255,255,0.08)',
-  },
-  observationText: {
+  statusText: {
     fontSize: 13,
     color: '#d1d5db',
     lineHeight: 1.5,
   },
-  observationTime: {
-    fontSize: 11,
-    color: '#6b7280',
-    marginTop: 4,
+  buttonRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 12,
+    marginBottom: 16,
+  },
+  primaryButton: {
+    padding: '12px 16px',
+    borderRadius: 10,
+    border: 'none',
+    background: 'linear-gradient(135deg, #0a66c2 0%, #00a0dc 100%)',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  secondaryButton: {
+    padding: '12px 16px',
+    borderRadius: 10,
+    border: '1px solid rgba(255,255,255,0.16)',
+    background: 'rgba(255,255,255,0.08)',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: 'pointer',
   },
   saveButton: {
     width: '100%',
     padding: '14px 24px',
-    background: 'linear-gradient(135deg, #0a66c2 0%, #0077b5 100%)',
-    border: 'none',
     borderRadius: 12,
+    border: 'none',
+    background: 'linear-gradient(135deg, #0a66c2 0%, #00a0dc 100%)',
     color: '#fff',
     fontSize: 16,
-    fontWeight: 600,
+    fontWeight: 700,
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 4px 16px rgba(10, 102, 194, 0.3)',
   },
   footer: {
-    marginTop: 32,
-    textAlign: 'center' as const,
-    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 24,
     color: '#6b7280',
-  },
-  footerLink: {
-    color: '#9ca3af',
-    fontWeight: 600,
-    textDecoration: 'none',
+    fontSize: 12,
   },
 };

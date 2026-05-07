@@ -4,9 +4,8 @@ function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.trim().replace(/\/+$/, '');
 }
 
-function authHeaders(token: string): HeadersInit {
+function jsonHeaders(): HeadersInit {
   return {
-    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
 }
@@ -27,16 +26,13 @@ async function readError(response: Response): Promise<string> {
   return response.statusText || `HTTP ${response.status}`;
 }
 
-export async function fetchPhoenixSessions(
-  baseUrl: string,
-  token: string
-): Promise<PhoenixSession[]> {
+export async function fetchPhoenixSessions(baseUrl: string): Promise<PhoenixSession[]> {
   try {
-    if (!baseUrl.trim() || !token.trim()) return [];
+    if (!baseUrl.trim()) return [];
 
     const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/v1/sessions`, {
       method: 'GET',
-      headers: authHeaders(token),
+      credentials: 'include',
     });
 
     if (!response.ok) return [];
@@ -49,21 +45,16 @@ export async function fetchPhoenixSessions(
 }
 
 export async function testPhoenixConnection(
-  baseUrl: string,
-  token: string,
-  _userId: string
+  baseUrl: string
 ): Promise<{ success: boolean; error?: string; sessionCount?: number }> {
   try {
     if (!baseUrl.trim()) {
       return { success: false, error: 'Phoenix base URL is required.' };
     }
-    if (!token.trim()) {
-      return { success: false, error: 'Phoenix token is required.' };
-    }
 
     const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/v1/sessions`, {
       method: 'GET',
-      headers: authHeaders(token),
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -83,6 +74,33 @@ export async function testPhoenixConnection(
   }
 }
 
+export async function getPhoenixUser(
+  baseUrl: string
+): Promise<{ success: boolean; email?: string; error?: string }> {
+  try {
+    if (!baseUrl.trim()) {
+      return { success: false, error: 'Phoenix base URL is required.' };
+    }
+
+    const response = await fetch(`${normalizeBaseUrl(baseUrl)}/auth/me`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return { success: false, error: await readError(response) };
+    }
+
+    const user = await response.json();
+    return { success: true, email: typeof user?.email === 'string' ? user.email : undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Could not verify Phoenix login.',
+    };
+  }
+}
+
 export function formatMessagesText(context: ConversationContext): string {
   return context.messages
     .map((message) => {
@@ -94,7 +112,6 @@ export function formatMessagesText(context: ConversationContext): string {
 
 export async function generateLinkedInReply(
   baseUrl: string,
-  token: string,
   sessionId: string,
   pilotBlock: {
     username: string;
@@ -108,7 +125,8 @@ export async function generateLinkedInReply(
 
     const blockResponse = await fetch(`${apiBase}/api/v1/sessions/${sessionId}/pilot-block`, {
       method: 'POST',
-      headers: authHeaders(token),
+      credentials: 'include',
+      headers: jsonHeaders(),
       body: JSON.stringify({
         username: pilotBlock.username,
         headline: pilotBlock.headline,
@@ -122,7 +140,8 @@ export async function generateLinkedInReply(
 
     const taskResponse = await fetch(`${apiBase}/api/v1/sessions/${sessionId}/tasks`, {
       method: 'POST',
-      headers: authHeaders(token),
+      credentials: 'include',
+      headers: jsonHeaders(),
       body: JSON.stringify({
         task_id: 'linkedin_response',
         user_inputs: { draft_content: draftContent || '' },
