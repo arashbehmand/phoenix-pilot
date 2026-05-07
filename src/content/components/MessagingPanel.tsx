@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { ConversationContext, MessageRequest, MessageResponse, PhoenixSession, ScoredReply } from '../../types';
 import { savePhoenixSession } from '../../utils/storage';
 
+const TEMP_SESSION_ID = '__phoenix_defaults__';
+
 function isExtensionContextValid(): boolean {
   try {
     return !!chrome?.runtime?.id;
@@ -56,6 +58,9 @@ export function MessagingPanel({
   const [replies, setReplies] = useState<ScoredReply[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [activeReplySessionId, setActiveReplySessionId] = useState('');
+  const [isRefining, setIsRefining] = useState(false);
+  const [refinementText, setRefinementText] = useState('');
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -126,7 +131,7 @@ export function MessagingPanel({
     const loadedSessions = response.sessions || [];
     setSessions(loadedSessions);
 
-    if (loadedSessions.length === 0) {
+    if (!response.success) {
       setSelectedSessionId('');
       setError(response.error || 'Log in to Phoenix, then reopen this panel or refresh sessions.');
     } else if (
@@ -135,15 +140,20 @@ export function MessagingPanel({
     ) {
       setSelectedSessionId(response.settings.phoenixSessionId);
     } else {
-      setSelectedSessionId('');
+      setSelectedSessionId(TEMP_SESSION_ID);
     }
 
     setIsLoadingSessions(false);
   };
 
   const handleSessionChange = async (sessionId: string) => {
-    const selected = sessions.find((session) => session.id === sessionId);
     setSelectedSessionId(sessionId);
+    setActiveReplySessionId('');
+    if (sessionId === TEMP_SESSION_ID) {
+      await savePhoenixSession('', '');
+      return;
+    }
+    const selected = sessions.find((session) => session.id === sessionId);
     await savePhoenixSession(sessionId, selected?.display_name || '');
   };
 
@@ -162,26 +172,29 @@ export function MessagingPanel({
     }
 
     if (!selectedSessionId) {
-      setError('Select a Phoenix session before generating a reply.');
+      setError('Select a Phoenix session or use Phoenix defaults.');
       return;
     }
 
     setIsGenerating(true);
     setError(null);
     setReplies([]);
+    setActiveReplySessionId('');
 
     try {
       const response = await safeSendMessage({
         type: 'GENERATE_MESSAGES',
         payload: {
           conversationContext,
-          sessionId: selectedSessionId,
+          sessionId: selectedSessionId === TEMP_SESSION_ID ? undefined : selectedSessionId,
+          useTemporarySession: selectedSessionId === TEMP_SESSION_ID,
           userThoughts: userThoughts.trim() || undefined,
         },
       });
 
       if (response.success && response.replies) {
         setReplies(response.replies);
+        setActiveReplySessionId(response.sessionId || (selectedSessionId === TEMP_SESSION_ID ? '' : selectedSessionId));
       } else {
         setError(response.error || 'Failed to generate replies.');
       }
@@ -189,6 +202,40 @@ export function MessagingPanel({
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleRefine = async (instruction: string) => {
+    const trimmedInstruction = instruction.trim();
+    if (!trimmedInstruction) return;
+
+    if (!activeReplySessionId) {
+      setError('Generate a reply before refining it.');
+      return;
+    }
+
+    setIsRefining(true);
+    setError(null);
+
+    try {
+      const response = await safeSendMessage({
+        type: 'REFINE_MESSAGE_REPLY',
+        payload: {
+          sessionId: activeReplySessionId,
+          instruction: trimmedInstruction,
+        },
+      });
+
+      if (response.success && response.replies) {
+        setReplies(response.replies);
+        setActiveReplySessionId(response.sessionId || activeReplySessionId);
+      } else {
+        setError(response.error || 'Failed to refine reply.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+    } finally {
+      setIsRefining(false);
     }
   };
 
@@ -258,17 +305,18 @@ export function MessagingPanel({
 
       <div className="panel-content">
         <div className="section">
-          <div className="section-label">Phoenix Session</div>
+          <div className="section-label">Phoenix Context</div>
           <div className="session-row">
             <select
               className="tone-select"
               value={selectedSessionId}
               onChange={(e) => handleSessionChange(e.target.value)}
-              disabled={isLoadingSessions || sessions.length === 0}
+              disabled={isLoadingSessions}
             >
               <option value="">
-                {isLoadingSessions ? 'Loading sessions...' : sessions.length === 0 ? 'No sessions available' : 'Select a Phoenix session'}
+                {isLoadingSessions ? 'Loading sessions...' : 'Select context'}
               </option>
+              <option value={TEMP_SESSION_ID}>No session - use Phoenix defaults</option>
               {sessions.map((session) => (
                 <option key={session.id} value={session.id}>
                   {session.display_name}
@@ -279,7 +327,7 @@ export function MessagingPanel({
               {isLoadingSessions ? <div className="spinner-small" /> : 'Refresh'}
             </button>
           </div>
-          {sessions.length === 0 && !isLoadingSessions && (
+          {error && sessions.length === 0 && !isLoadingSessions && (
             <button className="settings-btn inline" onClick={openSettings}>Open Phoenix Login</button>
           )}
         </div>
@@ -327,7 +375,7 @@ export function MessagingPanel({
             ) : !conversationContext ? (
               'Open a Conversation'
             ) : !selectedSessionId ? (
-              'Select a Phoenix Session'
+              'Select Context'
             ) : (
               'Suggest Reply'
             )}
@@ -373,6 +421,56 @@ export function MessagingPanel({
                     <button className="insert-btn" onClick={() => onInsertReply(reply.text)} title="Insert into message box">
                       Insert
                     </button>
+                  </div>
+                  <div className="refine-panel">
+                    <div className="refine-actions">
+                      <button
+                        className="action-btn"
+                        disabled={isRefining}
+                        onClick={() => handleRefine('Make this much shorter. Keep it direct, warm, and natural.')}
+                      >
+                        Shorter
+                      </button>
+                      <button
+                        className="action-btn"
+                        disabled={isRefining}
+                        onClick={() =>
+                          handleRefine('Tune the tone to be concise, confident, and human. Remove over-explaining.')
+                        }
+                      >
+                        Tune tone
+                      </button>
+                      <button
+                        className="action-btn"
+                        disabled={isRefining}
+                        onClick={() =>
+                          handleRefine(
+                            'Point to one relevant project or concrete experience from my resume/context, but keep the reply brief.'
+                          )
+                        }
+                      >
+                        Point to project
+                      </button>
+                    </div>
+                    <div className="refine-custom-row">
+                      <input
+                        className="refine-input"
+                        value={refinementText}
+                        onChange={(event) => setRefinementText(event.target.value)}
+                        placeholder="Custom refinement..."
+                        disabled={isRefining}
+                      />
+                      <button
+                        className="action-btn"
+                        disabled={isRefining || !refinementText.trim()}
+                        onClick={() => {
+                          handleRefine(refinementText);
+                          setRefinementText('');
+                        }}
+                      >
+                        {isRefining ? <div className="spinner-small" /> : 'Refine'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

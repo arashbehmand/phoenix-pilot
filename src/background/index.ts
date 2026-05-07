@@ -1,5 +1,12 @@
 import { getSettings, migrateFromSaaSVersion, migrateFromSalesVersion } from '../utils/storage';
-import { fetchPhoenixSessions, formatMessagesText, generateLinkedInReply, getPhoenixUser } from '../utils/phoenix-client';
+import {
+  fetchPhoenixSessions,
+  formatMessagesText,
+  generateLinkedInReply,
+  generateTemporaryLinkedInReply,
+  getPhoenixUser,
+  refineLinkedInReply,
+} from '../utils/phoenix-client';
 import type { MessageRequest, MessageResponse, ScoredReply } from '../types';
 
 migrateFromSaaSVersion();
@@ -20,6 +27,15 @@ chrome.runtime.onMessage.addListener((request: MessageRequest, _sender, sendResp
       .then(sendResponse)
       .catch((error) => {
         sendResponse({ success: false, error: error.message || 'Failed to generate message replies' });
+      });
+    return true;
+  }
+
+  if (request.type === 'REFINE_MESSAGE_REPLY') {
+    handleRefineMessageReply(request.payload)
+      .then(sendResponse)
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message || 'Failed to refine message reply' });
       });
     return true;
   }
@@ -98,35 +114,67 @@ async function handleCheckConfig(): Promise<MessageResponse> {
 
 async function handleGenerateMessages(payload: {
   conversationContext: Parameters<typeof formatMessagesText>[0];
-  sessionId: string;
+  sessionId?: string;
+  useTemporarySession?: boolean;
   userThoughts?: string;
 }): Promise<MessageResponse> {
-  const { conversationContext, sessionId, userThoughts } = payload;
+  const { conversationContext, sessionId, useTemporarySession, userThoughts } = payload;
   const settings = await getSettings();
 
   if (!settings.phoenixBaseUrl) {
     return { success: false, error: 'Phoenix base URL is not configured.' };
   }
 
-  if (!sessionId) {
+  if (!sessionId && !useTemporarySession) {
     return { success: false, error: 'Select a Phoenix session before generating a reply.' };
   }
 
-  const result = await generateLinkedInReply(
-    settings.phoenixBaseUrl,
-    sessionId,
-    {
-      username: conversationContext.participantName,
-      headline: conversationContext.participantHeadline,
-      messagesText: formatMessagesText(conversationContext),
-    },
-    userThoughts
-  );
+  const pilotBlock = {
+    username: conversationContext.participantName,
+    headline: conversationContext.participantHeadline,
+    messagesText: formatMessagesText(conversationContext),
+  };
+
+  const result = useTemporarySession
+    ? await generateTemporaryLinkedInReply(settings.phoenixBaseUrl, pilotBlock, userThoughts)
+    : await generateLinkedInReply(settings.phoenixBaseUrl, sessionId!, pilotBlock, userThoughts);
 
   if (!result.success) {
     return { success: false, error: result.error };
   }
 
   const replies: ScoredReply[] = [{ text: result.reply!, recommendationTag: 'Most Authentic' }];
-  return { success: true, replies };
+  return { success: true, replies, sessionId: result.sessionId || sessionId };
+}
+
+async function handleRefineMessageReply(payload: {
+  sessionId: string;
+  instruction: string;
+}): Promise<MessageResponse> {
+  const settings = await getSettings();
+
+  if (!settings.phoenixBaseUrl) {
+    return { success: false, error: 'Phoenix base URL is not configured.' };
+  }
+
+  if (!payload.sessionId) {
+    return { success: false, error: 'Generate a reply before refining it.' };
+  }
+
+  if (!payload.instruction.trim()) {
+    return { success: false, error: 'Add a refinement instruction.' };
+  }
+
+  const result = await refineLinkedInReply(
+    settings.phoenixBaseUrl,
+    payload.sessionId,
+    payload.instruction.trim()
+  );
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+
+  const replies: ScoredReply[] = [{ text: result.reply!, recommendationTag: 'Refined' }];
+  return { success: true, replies, sessionId: payload.sessionId };
 }

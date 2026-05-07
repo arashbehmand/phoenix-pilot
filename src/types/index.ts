@@ -13,6 +13,7 @@ export interface PhoenixSession {
 export type MessageRequest =
   | { type: 'LIST_SESSIONS' }
   | { type: 'GENERATE_MESSAGES'; payload: MessagingRequest }
+  | { type: 'REFINE_MESSAGE_REPLY'; payload: RefineMessageRequest }
   | { type: 'CHECK_CONFIG' }
   | { type: 'OPEN_OPTIONS' };
 
@@ -25,6 +26,7 @@ export interface MessageResponse {
   };
   sessions?: PhoenixSession[];
   replies?: ScoredReply[];
+  sessionId?: string;
   summary?: ConversationSummary;
 }
 
@@ -64,8 +66,14 @@ export type MessagingToneType =
 
 export interface MessagingRequest {
   conversationContext: ConversationContext;
-  sessionId: string;
+  sessionId?: string;
+  useTemporarySession?: boolean;
   userThoughts?: string;
+}
+
+export interface RefineMessageRequest {
+  sessionId: string;
+  instruction: string;
 }
 
 export interface ScoredReply {
@@ -75,6 +83,7 @@ export interface ScoredReply {
 
 export type MessagingRecommendationTag =
   | 'Most Authentic'
+  | 'Refined'
   | 'Best Follow-up'
   | 'Move Forward'
   | 'Build Rapport'

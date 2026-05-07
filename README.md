@@ -11,10 +11,10 @@ Authentication is handled by the Phoenix website. The extension does not store p
 3. Click **Open Phoenix Login** and log in to Phoenix.
 4. Open LinkedIn Messaging.
 5. Click the Phoenix reply button in the LinkedIn message composer.
-6. Select a Phoenix session in the reply panel.
+6. Select a Phoenix session in the reply panel, or choose **No session - use Phoenix defaults**.
 7. Optionally describe the goal for the reply.
 8. Click **Suggest Reply**.
-9. Insert or copy the generated reply.
+9. Refine the suggested reply if needed, then insert or copy it.
 
 The selected session is remembered as a convenience, but session selection lives in the LinkedIn reply panel, not in Settings.
 
@@ -25,6 +25,8 @@ The selected session is remembered as a convenience, but session selection lives
 - Lists Phoenix sessions for the logged-in Phoenix user.
 - Syncs the conversation into the selected Phoenix session via `pilot-block`.
 - Runs Phoenix's `linkedin_response` task.
+- Can generate without selecting a session by asking Phoenix to create a temporary session from saved user defaults.
+- Refines the generated `linkedin_response` artifact with concise follow-up instructions.
 - Displays the generated reply and lets the user insert it into LinkedIn.
 
 The extension does not inject comment-generation buttons into the feed and does not inject a post-generation assistant into LinkedIn post creation.
@@ -50,7 +52,9 @@ The options and popup UIs are intentionally small:
 
 ## Phoenix API Flow
 
-The extension uses this generation sequence:
+The extension uses two generation modes.
+
+### Selected Session
 
 1. `GET /auth/me`
 
@@ -86,6 +90,57 @@ The extension uses this generation sequence:
    ```
 
 The extension displays `artifact.text_payload`, falling back to compatible text fields if needed.
+
+### No Session
+
+When the user chooses **No session - use Phoenix defaults**, the background service worker calls:
+
+```http
+POST /api/v1/sessions/temporary-linkedin-response
+```
+
+Payload:
+
+```json
+{
+  "username": "Jane Doe",
+  "headline": "Recruiter at Example",
+  "messages_text": "[10:00] Jane Doe: Hi...\n[10:05] Me: Thanks...",
+  "draft_content": "Ask for a short intro call"
+}
+```
+
+The Phoenix backend creates a temporary Phoenix Pilot session for the authenticated user, applies saved user defaults, stores the LinkedIn conversation as `communication_history`, and runs the same `linkedin_response` task. A saved default `requirements` value is required because it maps to the `honest_context` artifact. A saved default `resume` value is applied as `base_resume` when present.
+
+The response includes `session_id` so the extension can refine the generated artifact:
+
+```json
+{
+  "session_id": "uuid",
+  "artifact": {
+    "artifact_type": "linkedin_response",
+    "text_payload": "Thanks Jane..."
+  }
+}
+```
+
+### Refinement
+
+After a reply is generated, the panel can refine the current `linkedin_response` artifact:
+
+```http
+POST /api/v1/sessions/{session_id}/artifacts/linkedin_response/refine
+```
+
+Payload:
+
+```json
+{
+  "instruction": "Make this much shorter. Keep it direct, warm, and natural."
+}
+```
+
+Built-in refinement buttons currently target the common LinkedIn DM fixes: shorten the response, tune tone, and point to one relevant project or concrete experience from the user context.
 
 ## Authentication Contract
 
@@ -191,11 +246,13 @@ python3 -m py_compile \
 - Open extension Settings and click **Check Login**.
 - Confirm the Phoenix API base URL points to the backend that owns your login cookies.
 - Confirm the backend allows credentialed requests from the Chrome extension origin.
+- You can still choose **No session - use Phoenix defaults** if Phoenix login works and user defaults are saved.
 
 **Generate fails with missing honest context**
 
 - Open the selected Phoenix session in the Phoenix webapp.
 - Add or update honest job preferences/context.
+- For no-session generation, save honest job preferences as the default `requirements` value in Phoenix.
 - Retry generation from LinkedIn Messaging.
 
 **Login works on the website but not in the extension**

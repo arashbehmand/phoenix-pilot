@@ -561,6 +561,43 @@ function getPanelStyles(): string {
       gap: 8px;
     }
 
+    .refine-panel {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .refine-actions,
+    .refine-custom-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .refine-input {
+      flex: 1;
+      min-width: 160px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .refine-input::placeholder {
+      color: #6b7280;
+    }
+
+    .refine-input:focus {
+      outline: none;
+      border-color: #0a66c2;
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.2);
+    }
+
     .action-btn,
     .settings-btn,
     .insert-btn {

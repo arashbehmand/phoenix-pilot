@@ -173,3 +173,87 @@ export async function generateLinkedInReply(
     };
   }
 }
+
+export async function generateTemporaryLinkedInReply(
+  baseUrl: string,
+  pilotBlock: {
+    username: string;
+    headline?: string;
+    messagesText: string;
+  },
+  draftContent?: string
+): Promise<{ success: boolean; reply?: string; sessionId?: string; error?: string }> {
+  try {
+    const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/v1/sessions/temporary-linkedin-response`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        username: pilotBlock.username,
+        headline: pilotBlock.headline,
+        messages_text: pilotBlock.messagesText,
+        draft_content: draftContent || '',
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await readError(response);
+      if (/default honest context/i.test(error) || /honest context/i.test(error)) {
+        return {
+          success: false,
+          error:
+            'Phoenix needs a default honest context for no-session generation. Save honest job preferences in Phoenix or choose a session.',
+        };
+      }
+      return { success: false, error };
+    }
+
+    const body = await response.json();
+    const reply = body?.artifact?.text_payload || body?.artifact?.content_raw || body?.text_payload;
+    if (typeof reply !== 'string' || !reply.trim()) {
+      return { success: false, error: 'Phoenix returned an empty LinkedIn response.' };
+    }
+
+    return { success: true, reply: reply.trim(), sessionId: body?.session_id };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Could not generate LinkedIn reply.',
+    };
+  }
+}
+
+export async function refineLinkedInReply(
+  baseUrl: string,
+  sessionId: string,
+  instruction: string
+): Promise<{ success: boolean; reply?: string; error?: string }> {
+  try {
+    const response = await fetch(
+      `${normalizeBaseUrl(baseUrl)}/api/v1/sessions/${sessionId}/artifacts/linkedin_response/refine`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ instruction }),
+      }
+    );
+
+    if (!response.ok) {
+      return { success: false, error: await readError(response) };
+    }
+
+    const body = await response.json();
+    const reply = body?.text_payload || body?.artifact?.text_payload || body?.content_raw;
+    if (typeof reply !== 'string' || !reply.trim()) {
+      return { success: false, error: 'Phoenix returned an empty refined reply.' };
+    }
+
+    return { success: true, reply: reply.trim() };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Could not refine LinkedIn reply.',
+    };
+  }
+}
