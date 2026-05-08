@@ -38,7 +38,9 @@ export async function fetchPhoenixSessions(baseUrl: string): Promise<PhoenixSess
     if (!response.ok) return [];
 
     const sessions = await response.json();
-    return Array.isArray(sessions) ? sessions : [];
+    return Array.isArray(sessions)
+      ? sessions.filter((session) => !session?.is_hidden && !session?.is_archived)
+      : [];
   } catch {
     return [];
   }
@@ -181,7 +183,9 @@ export async function generateTemporaryLinkedInReply(
     headline?: string;
     messagesText: string;
   },
-  draftContent?: string
+  draftContent?: string,
+  temporarySessionKey?: string,
+  previousTemporarySessionId?: string
 ): Promise<{ success: boolean; reply?: string; sessionId?: string; error?: string }> {
   try {
     const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/v1/sessions/temporary-linkedin-response`, {
@@ -193,6 +197,8 @@ export async function generateTemporaryLinkedInReply(
         headline: pilotBlock.headline,
         messages_text: pilotBlock.messagesText,
         draft_content: draftContent || '',
+        client_session_key: temporarySessionKey || undefined,
+        previous_session_id: previousTemporarySessionId || undefined,
       }),
     });
 

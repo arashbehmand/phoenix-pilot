@@ -118,7 +118,14 @@ async function handleGenerateMessages(payload: {
   useTemporarySession?: boolean;
   userThoughts?: string;
 }): Promise<MessageResponse> {
-  const { conversationContext, sessionId, useTemporarySession, userThoughts } = payload;
+  const {
+    conversationContext,
+    sessionId,
+    useTemporarySession,
+    userThoughts,
+    temporarySessionKey,
+    previousTemporarySessionId,
+  } = payload;
   const settings = await getSettings();
 
   if (!settings.phoenixBaseUrl) {
@@ -136,7 +143,13 @@ async function handleGenerateMessages(payload: {
   };
 
   const result = useTemporarySession
-    ? await generateTemporaryLinkedInReply(settings.phoenixBaseUrl, pilotBlock, userThoughts)
+    ? await generateTemporaryLinkedInReply(
+        settings.phoenixBaseUrl,
+        pilotBlock,
+        userThoughts,
+        temporarySessionKey,
+        previousTemporarySessionId
+      )
     : await generateLinkedInReply(settings.phoenixBaseUrl, sessionId!, pilotBlock, userThoughts);
 
   if (!result.success) {

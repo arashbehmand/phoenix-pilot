@@ -8,6 +8,8 @@ export interface PhoenixSession {
   id: string;
   display_name: string;
   created_at: string;
+  is_archived?: boolean;
+  is_hidden?: boolean;
 }
 
 export type MessageRequest =
@@ -68,6 +70,8 @@ export interface MessagingRequest {
   conversationContext: ConversationContext;
   sessionId?: string;
   useTemporarySession?: boolean;
+  temporarySessionKey?: string;
+  previousTemporarySessionId?: string;
   userThoughts?: string;
 }
 

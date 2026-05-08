@@ -1,8 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ConversationContext, MessageRequest, MessageResponse, PhoenixSession, ScoredReply } from '../../types';
-import { savePhoenixSession } from '../../utils/storage';
+import { getTemporarySessionId, savePhoenixSession, saveTemporarySessionId } from '../../utils/storage';
 
 const TEMP_SESSION_ID = '__phoenix_defaults__';
+
+function normalizeSessionKeyPart(value?: string): string {
+  return (value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .slice(0, 160);
+}
+
+function getTemporarySessionKey(context: ConversationContext): string {
+  const url = typeof window !== 'undefined' ? window.location.href.split(/[?#]/)[0] : '';
+  return [
+    'linkedin-dm',
+    normalizeSessionKeyPart(context.participantName),
+    normalizeSessionKeyPart(context.participantHeadline),
+    normalizeSessionKeyPart(url),
+  ].join('|');
+}
 
 function isExtensionContextValid(): boolean {
   try {
@@ -182,12 +200,20 @@ export function MessagingPanel({
     setActiveReplySessionId('');
 
     try {
+      const temporarySessionKey =
+        selectedSessionId === TEMP_SESSION_ID ? getTemporarySessionKey(conversationContext) : undefined;
+      const previousTemporarySessionId = temporarySessionKey
+        ? await getTemporarySessionId(temporarySessionKey)
+        : undefined;
+
       const response = await safeSendMessage({
         type: 'GENERATE_MESSAGES',
         payload: {
           conversationContext,
           sessionId: selectedSessionId === TEMP_SESSION_ID ? undefined : selectedSessionId,
           useTemporarySession: selectedSessionId === TEMP_SESSION_ID,
+          temporarySessionKey,
+          previousTemporarySessionId: previousTemporarySessionId || undefined,
           userThoughts: userThoughts.trim() || undefined,
         },
       });
@@ -195,6 +221,9 @@ export function MessagingPanel({
       if (response.success && response.replies) {
         setReplies(response.replies);
         setActiveReplySessionId(response.sessionId || (selectedSessionId === TEMP_SESSION_ID ? '' : selectedSessionId));
+        if (temporarySessionKey && response.sessionId) {
+          await saveTemporarySessionId(temporarySessionKey, response.sessionId);
+        }
       } else {
         setError(response.error || 'Failed to generate replies.');
       }

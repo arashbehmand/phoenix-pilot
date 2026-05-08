@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   PHOENIX_BASE_URL: 'phoenix_base_url',
   PHOENIX_SESSION_ID: 'phoenix_session_id',
   PHOENIX_SESSION_NAME: 'phoenix_session_name',
+  TEMPORARY_SESSION_MAP: 'phoenix_temporary_session_map',
 } as const;
 
 const LEGACY_KEYS = [
@@ -122,6 +123,64 @@ export async function savePhoenixSession(sessionId: string, sessionName: string)
     phoenixSessionId: sessionId,
     phoenixSessionName: sessionName,
   });
+}
+
+export async function getTemporarySessionId(sessionKey: string): Promise<string> {
+  if (!sessionKey) return '';
+
+  return safeStorageOperation(
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.get([STORAGE_KEYS.TEMPORARY_SESSION_MAP], (result) => {
+          if (chrome.runtime.lastError) {
+            console.warn('Storage error:', chrome.runtime.lastError);
+            resolve('');
+            return;
+          }
+
+          const sessionMap = result[STORAGE_KEYS.TEMPORARY_SESSION_MAP];
+          resolve(
+            sessionMap && typeof sessionMap === 'object' && typeof sessionMap[sessionKey] === 'string'
+              ? sessionMap[sessionKey]
+              : ''
+          );
+        });
+      }),
+    ''
+  );
+}
+
+export async function saveTemporarySessionId(sessionKey: string, sessionId: string): Promise<void> {
+  if (!sessionKey || !sessionId) return;
+
+  return safeStorageOperation(
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.local.get([STORAGE_KEYS.TEMPORARY_SESSION_MAP], (result) => {
+          const existingMap = result[STORAGE_KEYS.TEMPORARY_SESSION_MAP];
+          const sessionMap =
+            existingMap && typeof existingMap === 'object' && !Array.isArray(existingMap)
+              ? existingMap
+              : {};
+
+          chrome.storage.local.set(
+            {
+              [STORAGE_KEYS.TEMPORARY_SESSION_MAP]: {
+                ...sessionMap,
+                [sessionKey]: sessionId,
+              },
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.warn('Storage error:', chrome.runtime.lastError);
+              }
+              resolve();
+            }
+          );
+        });
+      }),
+    undefined
+  );
 }
 
 export async function migrateFromSaaSVersion(): Promise<void> {
