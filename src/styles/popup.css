@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --color-accent: #0a66c2;
+  --color-accent: #F26522;
+  --color-accent-dark: #D8541A;
 }
 
 * {
@@ -13,9 +14,9 @@
 }
 
 body {
-  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #FFFFFF;
   min-width: 320px;
   min-height: 200px;
+  -webkit-font-smoothing: antialiased;
 }
-
