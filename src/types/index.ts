@@ -16,6 +16,8 @@ export type MessageRequest =
   | { type: 'LIST_SESSIONS' }
   | { type: 'GENERATE_MESSAGES'; payload: MessagingRequest }
   | { type: 'REFINE_MESSAGE_REPLY'; payload: RefineMessageRequest }
+  | { type: 'GENERATE_EMAIL'; payload: EmailGenerationRequest }
+  | { type: 'REFINE_EMAIL_DRAFT'; payload: RefineEmailRequest }
   | { type: 'CHECK_CONFIG' }
   | { type: 'OPEN_OPTIONS' };
 
@@ -28,8 +30,26 @@ export interface MessageResponse {
   };
   sessions?: PhoenixSession[];
   replies?: ScoredReply[];
+  draft?: string;
   sessionId?: string;
   summary?: ConversationSummary;
+}
+
+export interface EmailContext {
+  recipientName: string;
+  subject?: string;
+  threadText?: string;
+}
+
+export interface EmailGenerationRequest {
+  emailContext: EmailContext;
+  sessionId: string;
+  userInstructions?: string;
+}
+
+export interface RefineEmailRequest {
+  sessionId: string;
+  instruction: string;
 }
 
 export interface ChatMessage {

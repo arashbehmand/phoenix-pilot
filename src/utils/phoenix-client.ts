@@ -229,6 +229,105 @@ export async function generateTemporaryLinkedInReply(
   }
 }
 
+export async function generateEmailDraft(
+  baseUrl: string,
+  sessionId: string,
+  pilotBlock: {
+    username: string;
+    headline?: string;
+    messagesText: string;
+  },
+  draftContent?: string
+): Promise<{ success: boolean; draft?: string; error?: string }> {
+  try {
+    const apiBase = normalizeBaseUrl(baseUrl);
+
+    const blockResponse = await fetch(`${apiBase}/api/v1/sessions/${sessionId}/pilot-block`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        username: pilotBlock.username,
+        headline: pilotBlock.headline,
+        messages_text: pilotBlock.messagesText,
+      }),
+    });
+
+    if (!blockResponse.ok) {
+      return { success: false, error: await readError(blockResponse) };
+    }
+
+    const taskResponse = await fetch(`${apiBase}/api/v1/sessions/${sessionId}/tasks`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        task_id: 'email_response',
+        user_inputs: { draft_content: draftContent || '' },
+      }),
+    });
+
+    if (!taskResponse.ok) {
+      const error = await readError(taskResponse);
+      if (taskResponse.status === 422 || /honest_context/i.test(error)) {
+        return {
+          success: false,
+          error: 'Phoenix session is missing honest context. Add honest job preferences in Phoenix, then try again.',
+        };
+      }
+      return { success: false, error };
+    }
+
+    const body = await taskResponse.json();
+    const draft = body?.artifact?.text_payload || body?.artifact?.content_raw || body?.text_payload;
+    if (typeof draft !== 'string' || !draft.trim()) {
+      return { success: false, error: 'Phoenix returned an empty email draft.' };
+    }
+
+    return { success: true, draft: draft.trim() };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Could not generate email draft.',
+    };
+  }
+}
+
+export async function refineEmailDraft(
+  baseUrl: string,
+  sessionId: string,
+  instruction: string
+): Promise<{ success: boolean; draft?: string; error?: string }> {
+  try {
+    const response = await fetch(
+      `${normalizeBaseUrl(baseUrl)}/api/v1/sessions/${sessionId}/artifacts/email_response/refine`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ instruction }),
+      }
+    );
+
+    if (!response.ok) {
+      return { success: false, error: await readError(response) };
+    }
+
+    const body = await response.json();
+    const draft = body?.text_payload || body?.artifact?.text_payload || body?.content_raw;
+    if (typeof draft !== 'string' || !draft.trim()) {
+      return { success: false, error: 'Phoenix returned an empty refined draft.' };
+    }
+
+    return { success: true, draft: draft.trim() };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Could not refine email draft.',
+    };
+  }
+}
+
 export async function refineLinkedInReply(
   baseUrl: string,
   sessionId: string,

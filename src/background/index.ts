@@ -2,12 +2,14 @@ import { getSettings, migrateFromSaaSVersion, migrateFromSalesVersion } from '..
 import {
   fetchPhoenixSessions,
   formatMessagesText,
+  generateEmailDraft,
   generateLinkedInReply,
   generateTemporaryLinkedInReply,
   getPhoenixUser,
+  refineEmailDraft,
   refineLinkedInReply,
 } from '../utils/phoenix-client';
-import type { MessageRequest, MessageResponse, ScoredReply } from '../types';
+import type { EmailGenerationRequest, MessageRequest, MessageResponse, RefineEmailRequest, ScoredReply } from '../types';
 
 migrateFromSaaSVersion();
 migrateFromSalesVersion();
@@ -36,6 +38,24 @@ chrome.runtime.onMessage.addListener((request: MessageRequest, _sender, sendResp
       .then(sendResponse)
       .catch((error) => {
         sendResponse({ success: false, error: error.message || 'Failed to refine message reply' });
+      });
+    return true;
+  }
+
+  if (request.type === 'GENERATE_EMAIL') {
+    handleGenerateEmail(request.payload)
+      .then(sendResponse)
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message || 'Failed to generate email draft' });
+      });
+    return true;
+  }
+
+  if (request.type === 'REFINE_EMAIL_DRAFT') {
+    handleRefineEmailDraft(request.payload)
+      .then(sendResponse)
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message || 'Failed to refine email draft' });
       });
     return true;
   }
@@ -190,4 +210,63 @@ async function handleRefineMessageReply(payload: {
 
   const replies: ScoredReply[] = [{ text: result.reply!, recommendationTag: 'Refined' }];
   return { success: true, replies, sessionId: payload.sessionId };
+}
+
+async function handleGenerateEmail(payload: EmailGenerationRequest): Promise<MessageResponse> {
+  const settings = await getSettings();
+
+  if (!settings.phoenixBaseUrl) {
+    return { success: false, error: 'Phoenix base URL is not configured.' };
+  }
+
+  if (!payload.sessionId) {
+    return { success: false, error: 'Select a Phoenix session before generating an email draft.' };
+  }
+
+  const pilotBlock = {
+    username: payload.emailContext.recipientName,
+    headline: payload.emailContext.subject,
+    messagesText: payload.emailContext.threadText || '',
+  };
+
+  const result = await generateEmailDraft(
+    settings.phoenixBaseUrl,
+    payload.sessionId,
+    pilotBlock,
+    payload.userInstructions
+  );
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+
+  return { success: true, draft: result.draft, sessionId: payload.sessionId };
+}
+
+async function handleRefineEmailDraft(payload: RefineEmailRequest): Promise<MessageResponse> {
+  const settings = await getSettings();
+
+  if (!settings.phoenixBaseUrl) {
+    return { success: false, error: 'Phoenix base URL is not configured.' };
+  }
+
+  if (!payload.sessionId) {
+    return { success: false, error: 'Generate a draft before refining it.' };
+  }
+
+  if (!payload.instruction.trim()) {
+    return { success: false, error: 'Add a refinement instruction.' };
+  }
+
+  const result = await refineEmailDraft(
+    settings.phoenixBaseUrl,
+    payload.sessionId,
+    payload.instruction.trim()
+  );
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+
+  return { success: true, draft: result.draft, sessionId: payload.sessionId };
 }
