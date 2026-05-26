@@ -33,18 +33,64 @@ function findSubject(composeWindow: Element): string {
   return input?.value.trim() ?? '';
 }
 
-function findThreadText(composeWindow: Element): string {
-  // Quoted reply text (.gmail_quote) is present when replying or forwarding
-  const quote = composeWindow.querySelector('.gmail_quote');
-  if (quote?.textContent?.trim()) {
-    return quote.textContent.trim().slice(0, 2000);
+function scrapeConversationThread(composeWindow: Element): string {
+  // For inline replies the thread messages live outside the compose window,
+  // so we scope to document (Gmail shows one conversation at a time).
+  const containerSelectors = ['div[data-message-id]', '.adn', '.h7'];
+  let messageEls: Element[] = [];
+  for (const sel of containerSelectors) {
+    const found = Array.from(document.querySelectorAll(sel));
+    if (found.length > 0) { messageEls = found; break; }
   }
 
-  // Alternate selector for older Gmail layouts
-  const h7 = composeWindow.querySelector('.h7');
-  if (h7?.textContent?.trim()) {
-    return h7.textContent.trim().slice(0, 2000);
+  if (messageEls.length === 0) return '';
+
+  const entries: string[] = [];
+  for (const msgEl of messageEls) {
+    // Skip the container that wraps the active compose window
+    if (msgEl.contains(composeWindow) || composeWindow.contains(msgEl)) continue;
+
+    const bodyEl = msgEl.querySelector('.a3s') ?? msgEl.querySelector('.ii.gt');
+    if (!bodyEl) continue;
+
+    // Clone and strip nested quotes, signatures, scripts — avoids quote duplication
+    const clone = bodyEl.cloneNode(true) as Element;
+    ['.gmail_quote', '.gmail_quote_container', 'blockquote', '.gmail_signature', 'script', 'style']
+      .forEach((sel) => clone.querySelectorAll(sel).forEach((el) => el.remove()));
+
+    const bodyText = clone.textContent?.trim() ?? '';
+    if (!bodyText) continue;
+
+    const senderEl = msgEl.querySelector('.gD') as HTMLElement | null;
+    const sender = senderEl?.getAttribute('name') || senderEl?.textContent?.trim() || '';
+    const timeEl = msgEl.querySelector('.g3') as HTMLElement | null;
+    const timestamp = timeEl?.getAttribute('title') || timeEl?.textContent?.trim() || '';
+
+    const prefix = [timestamp && `[${timestamp}]`, sender && `${sender}:`].filter(Boolean).join(' ');
+    entries.push(prefix ? `${prefix}\n${bodyText}` : bodyText);
   }
+
+  if (entries.length === 0) return '';
+
+  // Cap at ~8000 chars; drop oldest messages first to preserve recent context
+  while (entries.length > 1 && entries.join('\n\n---\n\n').length > 8000) {
+    entries.shift();
+  }
+  return entries.join('\n\n---\n\n').slice(0, 8000);
+}
+
+function findThreadText(composeWindow: Element): string {
+  // Primary: scrape the surrounding conversation thread (covers inline replies)
+  const thread = scrapeConversationThread(composeWindow);
+  if (thread) return thread;
+
+  // Fallback: quoted block inside compose (pop-out replies, forwards)
+  const quote = composeWindow.querySelector('.gmail_quote');
+  if (quote?.textContent?.trim()) return quote.textContent.trim().slice(0, 8000);
+
+  // Last resort: older Gmail layout
+  const h7 = composeWindow.querySelector('.h7');
+  if (h7?.textContent?.trim()) return h7.textContent.trim().slice(0, 8000);
 
   return '';
 }

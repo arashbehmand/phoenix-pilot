@@ -37,10 +37,9 @@ export async function fetchPhoenixSessions(baseUrl: string): Promise<PhoenixSess
 
     if (!response.ok) return [];
 
-    const sessions = await response.json();
-    return Array.isArray(sessions)
-      ? sessions.filter((session) => !session?.is_hidden && !session?.is_archived)
-      : [];
+    const body = await response.json();
+    const sessions = Array.isArray(body) ? body : (body?.sessions ?? []);
+    return sessions.filter((session) => !session?.is_hidden && !session?.is_archived);
   } catch {
     return [];
   }
