@@ -1,6 +1,5 @@
 import { HeroSection } from './sections/HeroSection';
 import { FeaturesSection } from './sections/FeaturesSection';
-import { PersonaEvolutionSection } from './sections/PersonaEvolutionSection';
 import { InstallSection } from './sections/InstallSection';
 import { ScreenshotsSection } from './sections/ScreenshotsSection';
 import { WhyOpenSourceSection } from './sections/WhyOpenSourceSection';
@@ -11,13 +10,12 @@ import { Footer } from './Footer';
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-phoenix-dark via-gray-900 to-phoenix-dark">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <HeroSection />
       <FeaturesSection />
-      <PersonaEvolutionSection />
-      <InstallSection />
       <ScreenshotsSection />
+      <InstallSection />
       <WhyOpenSourceSection />
       <BuiltBySection />
       <CTASection />

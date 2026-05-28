@@ -1,103 +1,67 @@
-import { motion } from 'framer-motion';
-import { Download, Sparkles, Check, ChevronDown, Github } from 'lucide-react';
+import { Check, Download, Github } from 'lucide-react';
 
 export function HeroSection() {
-
   return (
-    <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-phoenix-cyan/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-phoenix-cyan/30 mb-8"
-          >
-            <Sparkles className="w-4 h-4 text-phoenix-cyan" />
-            <span className="text-sm font-medium text-phoenix-cyan">
-              Free & Open-Source — No Signup Required
-            </span>
-          </motion.div>
-
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span className="text-white">AI-Powered LinkedIn</span>
-            <br />
-            <span className="text-gradient">Comments That Convert</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
-            Context-aware commenting with image analysis, thread history, and
-            <br />
-            <span className="text-phoenix-cyan font-semibold">voice learning</span> — free forever, open-source, no account needed.
+    <section className="pt-32 pb-24 px-6 lg:px-8">
+      <div className="max-w-[1180px] mx-auto">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold tracking-widest uppercase text-p-orange mb-6">
+            Free · Open-Source · MIT License
           </p>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
-          >
+          <h1 className="text-5xl sm:text-6xl lg:text-[4.5rem] font-bold text-p-ink leading-[1.06] tracking-tight mb-6">
+            Reply with <em className="not-italic text-p-orange">context</em>,<br />
+            not a blank prompt.
+          </h1>
+
+          <p className="text-lg text-p-ink-mid leading-relaxed max-w-2xl mb-10">
+            Phoenix Pilot brings your Phoenix job search session into LinkedIn messaging and Gmail.
+            Draft recruiter replies, follow-ups, and networking messages that already know your
+            target role and background.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 mb-12">
             <a
-              href="/phoenix-v2.0.zip"
-              className="group px-8 py-4 bg-gradient-to-r from-phoenix-cyan to-blue-500 hover:from-blue-500 hover:to-phoenix-cyan text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-phoenix-cyan/25 hover:shadow-phoenix-cyan/40"
+              href="https://github.com/arashbehmand/phoenix-pilot/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-p-orange hover:bg-p-orange-deep text-white font-semibold rounded-[6px] transition-colors text-sm"
             >
-              <Download className="w-5 h-5" />
-              Download v2.0
+              <Download className="w-4 h-4" />
+              Download
+            </a>
+            <a
+              href="https://github.com/arashbehmand/phoenix-pilot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-p-ink hover:bg-p-ink/80 text-white font-semibold rounded-[6px] transition-colors text-sm"
+            >
+              <Github className="w-4 h-4" />
+              View on GitHub
             </a>
             <a
               href="#install"
-              className="px-8 py-4 glass border border-white/20 hover:border-phoenix-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-medium text-p-ink-mid hover:text-p-ink transition-colors"
             >
-              <ChevronDown className="w-5 h-5 text-phoenix-cyan" />
-              How to Install
+              How to install ↓
             </a>
-            <a
-              href="https://github.com/egorceo/phoenix-pilot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-4 glass border border-white/20 hover:border-phoenix-cyan/50 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
-            >
-              <Github className="w-5 h-5 text-phoenix-cyan" />
-              GitHub
-            </a>
-          </motion.div>
+          </div>
 
-          {/* Trust Indicators */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400"
-          >
+          <div className="flex flex-wrap gap-6 text-sm text-p-ink-mid">
             <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-400" />
-              <span>Open Source (MIT License)</span>
+              <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
+              Open Source (MIT License)
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-400" />
-              <span>Setup in 2 minutes</span>
+              <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
+              Setup in 2 minutes
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-400" />
-              <span>Supported by Travel Code</span>
+              <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
+              No API keys needed
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

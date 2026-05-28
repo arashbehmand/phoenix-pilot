@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,33 +7,14 @@
 @layer base {
   html, body {
     @apply h-full w-full m-0 p-0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
-  
+
   body {
-    @apply bg-phoenix-dark text-white antialiased;
+    @apply bg-white text-p-ink antialiased;
   }
-  
+
   #root {
     @apply h-full w-full;
   }
 }
-
-@layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-phoenix-cyan via-blue-400 to-phoenix-cyan;
-    background-size: 200% auto;
-    animation: gradient 3s linear infinite;
-  }
-  
-  .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
-  }
-  
-  .glow {
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-  }
-}
-
