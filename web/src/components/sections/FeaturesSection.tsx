@@ -1,54 +1,42 @@
 import { motion } from 'framer-motion';
-import { Image, MessageSquare, Users, TrendingUp, Brain, Target, Zap, Shield } from 'lucide-react';
+import { Mail, MessageSquare, Shield, Sparkles, Workflow, Wrench } from 'lucide-react';
 
 const features = [
   {
-    icon: Brain,
-    title: 'Learns Your Voice',
-    description: 'The AI analyzes your edits and refines its understanding of your writing style over time. After just 10 comments, it generates responses that sound authentically you.',
+    icon: MessageSquare,
+    title: 'LinkedIn Reply Co-pilot',
+    description: 'Generate recruiter replies, follow-ups, and networking responses directly inside LinkedIn messaging with session-aware Phoenix context.',
     color: 'from-purple-500 to-pink-500',
   },
   {
-    icon: Image,
-    title: 'Multimodal Analysis',
-    description: 'Analyzes images, charts, and screenshots in LinkedIn posts to provide context-aware comments that reference visual content.',
+    icon: Mail,
+    title: 'Gmail Draft Assistant',
+    description: 'Turn active Gmail threads into polished responses using the same Phoenix sessions you already maintain for your job search.',
     color: 'from-blue-500 to-cyan-500',
   },
   {
-    icon: MessageSquare,
-    title: 'DM Co-pilot',
-    description: 'Analyzes conversation history and suggests replies that move the conversation forward, build rapport, and close deals.',
+    icon: Workflow,
+    title: 'Phoenix Session Context',
+    description: 'Choose a Phoenix session and reuse your existing preferences, artifacts, and context instead of rewriting the same background for every reply.',
     color: 'from-green-500 to-emerald-500',
   },
   {
-    icon: Users,
-    title: 'Thread Awareness',
-    description: 'Understands nested comment threads, identifies the parent comment, and generates replies that continue the specific conversation context.',
+    icon: Sparkles,
+    title: 'Temporary Session Mode',
+    description: 'Generate replies without committing everything to a persistent session when you just need quick default-backed help.',
     color: 'from-orange-500 to-red-500',
   },
   {
-    icon: Target,
-    title: 'Integrated Prospecting',
-    description: 'Enrichment + CRM integration in your browser. Automatically capture lead data and sync with your CRM when engaging with prospects.',
+    icon: Shield,
+    title: 'Cookie-Based Auth',
+    description: 'Use your existing Phoenix login. The extension does not ask for provider API keys and stores only local extension settings.',
     color: 'from-yellow-500 to-orange-500',
   },
   {
-    icon: TrendingUp,
-    title: 'Scoring & Optimization',
-    description: 'Each generated comment includes engagement, expertise, and conversion scores to help you choose the highest-impact response.',
+    icon: Wrench,
+    title: 'Configurable Backend',
+    description: 'Point the extension at your own Phoenix API endpoint in development or use the managed production backend in normal operation.',
     color: 'from-indigo-500 to-purple-500',
-  },
-  {
-    icon: Zap,
-    title: 'Service Offer Integration',
-    description: 'Subtly bridge your expertise into comments. The AI finds natural connections between post topics and your services without being pushy.',
-    color: 'from-cyan-500 to-blue-500',
-  },
-  {
-    icon: Shield,
-    title: 'Privacy First',
-    description: 'All processing happens locally or on your secure server. Your data never leaves your control, and API keys are stored server-side.',
-    color: 'from-gray-500 to-slate-500',
   },
 ];
 
@@ -63,14 +51,14 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Everything You Need to <span className="text-gradient">Dominate LinkedIn</span>
+            Built for <span className="text-gradient">Job Search Conversations</span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Context-aware commenting with image analysis, thread history, and integrated prospecting — all in your browser.
+            Session-aware LinkedIn and Gmail assistance powered by Phoenix, designed to help you respond faster without losing context.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -92,4 +80,3 @@ export function FeaturesSection() {
     </section>
   );
 }
-

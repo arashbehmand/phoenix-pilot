@@ -1,7 +1,7 @@
 {
   "name": "phoenix-pilot",
   "version": "2.0.0",
-  "description": "AI job search assistant for LinkedIn with Phoenix-powered message generation.",
+  "description": "AI-powered LinkedIn and Gmail message assistant for job seekers.",
   "type": "module",
   "scripts": {
     "dev": "vite",
