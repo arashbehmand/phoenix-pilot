@@ -31,9 +31,9 @@ export function Footer() {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-p-ink-soft mb-3">Creator</h4>
             <ul className="space-y-2 text-sm text-p-ink-mid">
               <li>
-                <a href="https://www.linkedin.com/in/egor-karpovich/" target="_blank" rel="noopener noreferrer" className="hover:text-p-ink transition-colors flex items-center gap-1">
+                <a href="https://www.linkedin.com/in/arashbehmand/" target="_blank" rel="noopener noreferrer" className="hover:text-p-ink transition-colors flex items-center gap-1">
                   <Linkedin className="w-3 h-3" />
-                  Egor Karpovich
+                  Arash Behmand
                 </a>
               </li>
               <li>
@@ -58,7 +58,7 @@ export function Footer() {
         <div className="pt-6 border-t border-p-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-xs text-p-ink-soft">© 2025 Phoenix Pilot. Open-source under MIT License.</p>
           <p className="text-xs text-p-ink-soft">
-            Built by Egor Karpovich — Supported by{' '}
+            Built by Arash Behmand — Supported by{' '}
             <a href="https://travel-code.com" target="_blank" rel="noopener noreferrer" className="text-p-blue hover:text-p-blue-deep transition-colors">
               Travel Code
             </a>

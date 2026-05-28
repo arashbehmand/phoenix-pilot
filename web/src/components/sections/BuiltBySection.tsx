@@ -11,12 +11,12 @@ export function BuiltBySection() {
         <div className="grid md:grid-cols-2 gap-5 max-w-2xl">
           <div className="bg-white border border-p-line rounded-[8px] p-6">
             <div className="w-10 h-10 rounded-[6px] bg-p-orange-faint flex items-center justify-center mb-4">
-              <span className="text-sm font-bold text-p-orange">EK</span>
+              <span className="text-sm font-bold text-p-orange">AB</span>
             </div>
-            <h3 className="text-base font-semibold text-p-ink mb-0.5">Egor Karpovich</h3>
-            <p className="text-sm text-p-ink-soft mb-4">Co-founder & CEO</p>
+            <h3 className="text-base font-semibold text-p-ink mb-0.5">Arash Behmand</h3>
+            <p className="text-sm text-p-ink-soft mb-4">Creator</p>
             <a
-              href="https://www.linkedin.com/in/egor-karpovich/"
+              href="https://www.linkedin.com/in/arashbehmand/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-p-blue hover:text-p-blue-deep transition-colors"
