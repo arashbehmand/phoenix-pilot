@@ -6,13 +6,13 @@ export function CTASection() {
       <div className="max-w-[1180px] mx-auto">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold tracking-widest uppercase text-p-orange mb-4">
-            Free forever · Open-source
+            Extension: MIT licensed · Requires phoenix0.online
           </p>
           <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4">
             Start replying with <em className="not-italic text-p-orange">context</em>.
           </h2>
           <p className="text-lg text-white/60 mb-8">
-            Install Phoenix Pilot in two minutes. No API keys, no signup.
+            Install in two minutes. You'll need a phoenix0.online account to use it.
           </p>
 
           <div className="flex flex-wrap gap-3">

@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <span className="text-sm font-semibold text-p-ink block mb-3">Phoenix Pilot</span>
             <p className="text-sm text-p-ink-soft leading-relaxed">
-              Free, open-source messaging co-pilot for LinkedIn and Gmail, powered by Phoenix.
+              Chrome extension for LinkedIn and Gmail messaging, powered by phoenix0.online. Extension code: MIT licensed.
             </p>
           </div>
 

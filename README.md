@@ -1,6 +1,6 @@
 # Phoenix Pilot
 
-> Free, open-source Chrome extension — AI messaging co-pilot for LinkedIn and Gmail, powered by [phoenix0.online](https://phoenix0.online).
+> Chrome extension (MIT licensed) — AI messaging co-pilot for LinkedIn and Gmail, powered by [phoenix0.online](https://phoenix0.online). Requires a phoenix0.online account; the backend is currently closed-source.
 
 ## About
 

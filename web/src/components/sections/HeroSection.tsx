@@ -6,7 +6,7 @@ export function HeroSection() {
       <div className="max-w-[1180px] mx-auto">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold tracking-widest uppercase text-p-orange mb-6">
-            Free · Open-Source · MIT License
+            Extension: MIT Licensed · Backend: phoenix0.online
           </p>
 
           <h1 className="text-5xl sm:text-6xl lg:text-[4.5rem] font-bold text-p-ink leading-[1.06] tracking-tight mb-6">
@@ -50,15 +50,15 @@ export function HeroSection() {
           <div className="flex flex-wrap gap-6 text-sm text-p-ink-mid">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
-              Open Source (MIT License)
+              Extension code: MIT licensed
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
+              Requires a phoenix0.online account
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
               Setup in 2 minutes
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-p-orange flex-shrink-0" />
-              No API keys needed
             </div>
           </div>
         </div>
