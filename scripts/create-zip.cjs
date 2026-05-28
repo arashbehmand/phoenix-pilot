@@ -4,7 +4,8 @@ const archiver = require('archiver');
 
 const projectRoot = path.join(__dirname, '..');
 const distPath = path.join(projectRoot, 'phoenix_pilot_ready_for_chrome');
-const zipPath = path.join(projectRoot, 'phoenix-pilot-v2.0.0.zip');
+const manifest = JSON.parse(fs.readFileSync(path.join(projectRoot, 'manifest.json'), 'utf8'));
+const zipPath = path.join(projectRoot, `phoenix-pilot-v${manifest.version}.zip`);
 
 function createZip() {
   console.log('📦 Creating extension ZIP file...\n');
