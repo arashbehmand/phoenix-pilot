@@ -1,8 +1,30 @@
 # Phoenix Pilot
 
-Phoenix Pilot is a Chrome extension that adds a Phoenix-powered reply assistant to LinkedIn messaging. It is scoped to LinkedIn DMs: the old local OpenAI/Anthropic/Gemini comment and post generation paths have been removed.
+> Free, open-source Chrome extension — AI messaging co-pilot for LinkedIn and Gmail, powered by [phoenix0.online](https://phoenix0.online).
 
-Authentication is handled by the Phoenix website. The extension does not store provider API keys, Phoenix bearer tokens, or user IDs in Chrome storage. After the user logs in to Phoenix in the browser, the extension calls Phoenix with cookie-authenticated requests.
+## About
+
+Phoenix Pilot brings your Phoenix job search session into LinkedIn messaging and Gmail. Instead of starting from a blank prompt every time you reply to a recruiter or follow up on an application, it draws on the context you've already built in Phoenix — your target role, resume, preferences, and conversation history — and drafts a reply that actually sounds like you.
+
+**What it does:**
+- Injects a one-click reply assistant into LinkedIn Messaging
+- Injects a draft assistant into Gmail compose and thread views
+- Uses your Phoenix session for context-aware generation
+- Supports a temporary session mode when you don't want to commit to a full session
+- Authenticates via your existing Phoenix login — no API keys, no separate signup
+
+**What it does not do:**
+- Generate LinkedIn feed comments or posts
+- Store provider API keys or bearer tokens
+- Learn your voice locally or send data anywhere except phoenix0.online
+
+All API calls go to `https://api.phoenix0.online`. The extension itself stores only your API base URL preference and the last selected session ID, locally in your browser.
+
+Landing page: [arashbehmand.github.io/phoenix-pilot](https://arashbehmand.github.io/phoenix-pilot/)  
+License: MIT  
+Built by [Arash Behmand](https://www.linkedin.com/in/arashbehmand/)
+
+---
 
 ## User Flow
 
