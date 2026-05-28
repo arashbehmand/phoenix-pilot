@@ -9,7 +9,7 @@ import {
   refineEmailDraft,
   refineLinkedInReply,
 } from '../utils/phoenix-client';
-import type { EmailGenerationRequest, MessageRequest, MessageResponse, RefineEmailRequest, ScoredReply } from '../types';
+import type { EmailGenerationRequest, MessageRequest, MessageResponse, MessagingRequest, RefineEmailRequest, ScoredReply } from '../types';
 
 migrateFromSaaSVersion();
 migrateFromSalesVersion();
@@ -132,12 +132,7 @@ async function handleCheckConfig(): Promise<MessageResponse> {
   };
 }
 
-async function handleGenerateMessages(payload: {
-  conversationContext: Parameters<typeof formatMessagesText>[0];
-  sessionId?: string;
-  useTemporarySession?: boolean;
-  userThoughts?: string;
-}): Promise<MessageResponse> {
+async function handleGenerateMessages(payload: MessagingRequest): Promise<MessageResponse> {
   const {
     conversationContext,
     sessionId,
@@ -177,7 +172,8 @@ async function handleGenerateMessages(payload: {
   }
 
   const replies: ScoredReply[] = [{ text: result.reply!, recommendationTag: 'Most Authentic' }];
-  return { success: true, replies, sessionId: result.sessionId || sessionId };
+  const replySessionId = useTemporarySession ? (result as { sessionId?: string }).sessionId : undefined;
+  return { success: true, replies, sessionId: replySessionId || sessionId };
 }
 
 async function handleRefineMessageReply(payload: {

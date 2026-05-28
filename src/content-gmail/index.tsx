@@ -41,7 +41,6 @@ const composeBodyMap = new Map<string, HTMLElement>();
 let panelRoot: ReactDOM.Root | null = null;
 let panelContainer: HTMLElement | null = null;
 let activeComposeKey: string | null = null;
-let activeEmailContext: EmailContext | null = null;
 
 function injectStyles() {
   if (document.getElementById('lai-gmail-styles')) return;
@@ -101,7 +100,6 @@ function insertDraft(draft: string) {
 
 function openGmailPanel(composeKey: string, emailContext: EmailContext) {
   activeComposeKey = composeKey;
-  activeEmailContext = emailContext;
   renderGmailPanel(emailContext);
 }
 
@@ -115,7 +113,6 @@ function closePanel() {
     panelContainer = null;
   }
   activeComposeKey = null;
-  activeEmailContext = null;
 }
 
 function injectGmailButton(composeWindow: Element) {

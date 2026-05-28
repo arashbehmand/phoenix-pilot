@@ -11,7 +11,7 @@
  * - Structural relationships (parent/child traversal)
  */
 
-import type { PostData, CommentData, ThreadContext, EnrichedPostData } from '../../types';
+import type { CommentData, ThreadContext, EnrichedPostData } from '../../types';
 
 // ======================== Helper Functions ========================
 
@@ -59,20 +59,6 @@ function queryAllWithFallback(
   }
 
   return results;
-}
-
-/**
- * Find a button by its visible text content
- */
-function findButtonByText(parent: Element | Document, text: string): HTMLButtonElement | null {
-  const buttons = parent.querySelectorAll('button');
-  for (const btn of buttons) {
-    const btnText = btn.textContent?.trim();
-    if (btnText === text) {
-      return btn as HTMLButtonElement;
-    }
-  }
-  return null;
 }
 
 /**
@@ -182,7 +168,7 @@ function cleanExtractedText(text: string): string {
   // Remove reaction counts like "5,432 reactions"
   cleaned = cleaned.replace(/[\d,.]+ (reactions?|likes?|comments?|reposts?|shares?)/gi, '');
   // Remove "Like Comment Repost Send" action bar text that may leak in
-  cleaned = cleaned.replace(/\b(Like|Comment|Repost|Send|Share|Reply)\b\s*/g, (match, word) => {
+  cleaned = cleaned.replace(/\b(Like|Comment|Repost|Send|Share|Reply)\b\s*/g, (match, _word) => {
     // Only remove if it looks like an action button (standalone word)
     if (/^\s*$/.test(cleaned.substring(cleaned.indexOf(match) - 5, cleaned.indexOf(match)))) {
       return '';

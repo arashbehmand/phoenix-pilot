@@ -41,7 +41,6 @@ const contentStyles = `
 
 let panelRoot: ReactDOM.Root | null = null;
 let panelContainer: HTMLElement | null = null;
-let currentConversationContext: ConversationContext | null = null;
 
 function injectStyles() {
   if (document.getElementById('lai-content-styles')) return;
@@ -98,13 +97,11 @@ function insertReply(reply: string) {
 
 function openMessagingPanel() {
   getPanelContainer();
-  currentConversationContext = null;
   renderMessagingPanel(null, true);
 
   (async () => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     const context = await scrapeConversationContext();
-    currentConversationContext = context;
     renderMessagingPanel(context, false);
   })();
 }
@@ -118,7 +115,6 @@ function closePanel() {
     panelContainer.remove();
     panelContainer = null;
   }
-  currentConversationContext = null;
 }
 
 function injectMessagingButton() {

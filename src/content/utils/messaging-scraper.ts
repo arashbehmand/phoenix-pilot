@@ -235,7 +235,6 @@ function analyzeConversationSentiment(messages: ChatMessage[]): 'positive' | 'ne
   // Cold indicators (no response, formal)
   const lastMessage = messages[messages.length - 1];
   const isWaitingForReply = lastMessage.sender === 'me';
-  const isShortResponse = lastMessage.content.length < 20;
   
   if (hasNegotiating) return 'negotiating';
   if (hasPositive) return 'positive';
