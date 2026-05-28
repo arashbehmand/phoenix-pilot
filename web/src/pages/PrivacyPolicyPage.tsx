@@ -51,10 +51,10 @@ export function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">2. How the Extension Works</h2>
             <p className="mb-4">
-              Phoenix Pilot is a Chrome extension that helps you generate AI-powered replies to LinkedIn messages and Gmail emails. The extension connects to your self-hosted or managed Phoenix backend instance to generate responses based on your configured sessions and preferences.
+              Phoenix Pilot is a Chrome extension that helps you generate AI-powered replies to LinkedIn messages and Gmail emails. The extension connects to the Phoenix API to generate responses based on your configured sessions and preferences.
             </p>
             <p>
-              <strong className="text-white">Important:</strong> Phoenix Pilot does not operate its own backend servers. The extension communicates only with the Phoenix API endpoint you configure (by default, <code>https://api.phoenix0.online</code>). Your data is processed by your Phoenix instance, not by Phoenix Pilot directly.
+              <strong className="text-white">Important:</strong> Phoenix Pilot communicates only with the Phoenix API endpoint (by default, <code>https://api.phoenix0.online</code>). Your data is processed by the Phoenix service, not by Phoenix Pilot directly.
             </p>
           </section>
 
@@ -95,7 +95,7 @@ export function PrivacyPolicyPage() {
             <h2 className="text-2xl font-bold text-white mb-4">4. How We Use Your Information</h2>
             <p className="mb-4">The data processed by the extension is used exclusively for:</p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Generating contextual message replies via your Phoenix backend</li>
+              <li>Generating contextual message replies via the Phoenix API</li>
               <li>Maintaining your authenticated session with the Phoenix API</li>
               <li>Remembering your preferences between browser sessions</li>
             </ul>
@@ -110,7 +110,7 @@ export function PrivacyPolicyPage() {
               All communication between the extension and your Phoenix API is encrypted via HTTPS/TLS.
             </p>
             <p>
-              For details on how your Phoenix backend stores and processes data, please refer to the privacy policy of your Phoenix instance operator.
+              For details on how the Phoenix service stores and processes data, please refer to the Phoenix privacy policy.
             </p>
           </section>
 
@@ -118,7 +118,7 @@ export function PrivacyPolicyPage() {
             <h2 className="text-2xl font-bold text-white mb-4">6. Third-Party Services</h2>
             <p className="mb-4">Phoenix Pilot interacts with the following:</p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li><strong className="text-white">Phoenix API:</strong> Your configured Phoenix backend instance for reply generation and session management. Data handling is governed by your Phoenix instance's privacy policy.</li>
+              <li><strong className="text-white">Phoenix API:</strong> The Phoenix backend service for reply generation and session management. Data handling is governed by the Phoenix privacy policy.</li>
               <li><strong className="text-white">LinkedIn:</strong> The extension reads conversation data from LinkedIn pages you visit. No data is written to or modified on LinkedIn.</li>
               <li><strong className="text-white">Gmail:</strong> The extension reads email thread data from Gmail pages you visit. No data is written to or modified in Gmail.</li>
             </ul>
