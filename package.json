@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/sync-version.cjs && vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "zip": "npm run build && node scripts/create-zip.cjs"
   },
