@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "rm -rf public/screenshots && cp -r ../screenshots public/screenshots",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

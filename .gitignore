@@ -5,6 +5,7 @@ node_modules/
 dist/
 dist-zip/
 web/dist/
+web/public/screenshots/
 server-deploy/
 lipilot-server-deploy.zip
 phoenix_pilot_ready_for_chrome/
