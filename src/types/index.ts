@@ -12,6 +12,11 @@ export interface PhoenixSession {
   is_hidden?: boolean;
 }
 
+export interface SessionListResponse {
+  sessions: PhoenixSession[];
+  has_more: boolean;
+}
+
 export type MessageRequest =
   | { type: 'LIST_SESSIONS' }
   | { type: 'GENERATE_MESSAGES'; payload: MessagingRequest }

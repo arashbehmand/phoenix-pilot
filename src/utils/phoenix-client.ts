@@ -1,4 +1,4 @@
-import type { ConversationContext, PhoenixSession } from '../types';
+import type { ConversationContext, PhoenixSession, SessionListResponse } from '../types';
 
 function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.trim().replace(/\/+$/, '');
@@ -30,16 +30,34 @@ export async function fetchPhoenixSessions(baseUrl: string): Promise<PhoenixSess
   try {
     if (!baseUrl.trim()) return [];
 
-    const response = await fetch(`${normalizeBaseUrl(baseUrl)}/api/v1/sessions`, {
-      method: 'GET',
-      credentials: 'include',
-    });
+    const apiBase = normalizeBaseUrl(baseUrl);
+    const allVisible: PhoenixSession[] = [];
+    let offset = 0;
+    const PAGE_LIMIT = 100;
+    const MAX_PAGES = 10;
 
-    if (!response.ok) return [];
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const response = await fetch(
+        `${apiBase}/api/v1/sessions?limit=${PAGE_LIMIT}&offset=${offset}`,
+        { method: 'GET', credentials: 'include' }
+      );
 
-    const body = await response.json();
-    const sessions = Array.isArray(body) ? body : (body?.sessions ?? []);
-    return sessions.filter((session) => !session?.is_hidden && !session?.is_archived);
+      if (!response.ok) return allVisible;
+
+      const body: SessionListResponse = await response.json();
+      const sessions = Array.isArray(body) ? body : (body?.sessions ?? []);
+
+      for (const session of sessions) {
+        if (!session?.is_hidden && !session?.is_archived) {
+          allVisible.push(session);
+        }
+      }
+
+      if (!body?.has_more || sessions.length === 0) break;
+      offset += sessions.length;
+    }
+
+    return allVisible;
   } catch {
     return [];
   }
