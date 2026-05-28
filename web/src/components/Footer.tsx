@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Github, Linkedin, ExternalLink } from 'lucide-react';
+import { Github, Linkedin } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -36,12 +36,6 @@ export function Footer() {
                   Arash Behmand
                 </a>
               </li>
-              <li>
-                <a href="https://travel-code.com" target="_blank" rel="noopener noreferrer" className="hover:text-p-ink transition-colors flex items-center gap-1">
-                  <ExternalLink className="w-3 h-3" />
-                  Travel Code
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -57,12 +51,7 @@ export function Footer() {
 
         <div className="pt-6 border-t border-p-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-xs text-p-ink-soft">© 2025 Phoenix Pilot. Open-source under MIT License.</p>
-          <p className="text-xs text-p-ink-soft">
-            Built by Arash Behmand — Supported by{' '}
-            <a href="https://travel-code.com" target="_blank" rel="noopener noreferrer" className="text-p-blue hover:text-p-blue-deep transition-colors">
-              Travel Code
-            </a>
-          </p>
+          <p className="text-xs text-p-ink-soft">Built by Arash Behmand</p>
         </div>
       </div>
     </footer>
