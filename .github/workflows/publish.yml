@@ -1,0 +1,64 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Create ZIP
+        run: node scripts/create-zip.cjs
+
+      - name: Upload to Chrome Web Store
+        env:
+          CHROME_WEB_STORE_CLIENT_ID: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
+          CHROME_WEB_STORE_CLIENT_SECRET: ${{ secrets.CHROME_WEB_STORE_CLIENT_SECRET }}
+          CHROME_WEB_STORE_REFRESH_TOKEN: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+        run: |
+          npx chrome-webstore-upload-cli upload \
+            --source phoenix-pilot-v*.zip \
+            --extension-id "$CHROME_EXTENSION_ID" \
+            --client-id "$CHROME_WEB_STORE_CLIENT_ID" \
+            --client-secret "$CHROME_WEB_STORE_CLIENT_SECRET" \
+            --refresh-token "$CHROME_WEB_STORE_REFRESH_TOKEN"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: phoenix-pilot-v*.zip
+          generate_release_notes: true
+
+      - name: Build landing page
+        working-directory: web
+        run: npm ci && npm run build
+
+      - name: Deploy landing page to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web/dist
