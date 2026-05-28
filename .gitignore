@@ -7,6 +7,13 @@ dist-zip/
 web/dist/
 server-deploy/
 lipilot-server-deploy.zip
+phoenix_pilot_ready_for_chrome/
+phoenix-pilot-v*.zip
+phoenix-pilot-v*/
+
+# Design / planning artifacts
+phoenix-design-system/
+PLAN.md
 
 # IDE
 .idea/
