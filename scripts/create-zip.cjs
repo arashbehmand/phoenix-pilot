@@ -35,11 +35,19 @@ function createZip() {
 
     archive.pipe(output);
 
+    function shouldSkip(fileName) {
+      return fileName === '.DS_Store' || fileName.startsWith('.');
+    }
+
     // Add all files from dist folder
     function addDirectory(dir, baseDir = dir) {
       const files = fs.readdirSync(dir);
       
       for (const file of files) {
+        if (shouldSkip(file)) {
+          continue;
+        }
+
         const filePath = path.join(dir, file);
         const stats = fs.statSync(filePath);
         
