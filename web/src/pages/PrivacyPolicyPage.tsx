@@ -39,52 +39,35 @@ export function PrivacyPolicyPage() {
           className="glass rounded-2xl p-8 border border-white/10 space-y-6 text-gray-300"
         >
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
-            <p className="mb-4">
-              Phoenix Pilot ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension.
-            </p>
+            <h2 className="text-2xl font-bold text-white mb-4">1. Overview</h2>
             <p>
-              By using Phoenix Pilot, you agree to the collection and use of information in accordance with this policy.
+              Phoenix Pilot is a Chrome extension that helps you generate AI-powered replies to LinkedIn messages and Gmail emails. This privacy policy explains what data the extension accesses, how it is used, and your choices regarding that data.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">2. How the Extension Works</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">2. Data We Collect</h2>
+            
+            <h3 className="text-xl font-semibold text-white mb-3">2.1 Conversation Content</h3>
             <p className="mb-4">
-              Phoenix Pilot is a Chrome extension that helps you generate AI-powered replies to LinkedIn messages and Gmail emails. The extension connects to the Phoenix API to generate responses based on your configured sessions and preferences.
-            </p>
-            <p>
-              <strong className="text-white">Important:</strong> Phoenix Pilot communicates only with the Phoenix API endpoint (by default, <code>https://api.phoenix0.online</code>). Your data is processed by the Phoenix service, not by Phoenix Pilot directly.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">3. Information We Collect</h2>
-            <h3 className="text-xl font-semibold text-white mb-3">3.1 Authentication</h3>
-            <p className="mb-4">
-              Phoenix Pilot uses cookie-based authentication to connect to your Phoenix API. The extension does not store passwords, API keys, or bearer tokens. Authentication is handled entirely through your browser's existing session cookies for the Phoenix API domain.
-            </p>
-
-            <h3 className="text-xl font-semibold text-white mb-3">3.2 Conversation Data</h3>
-            <p className="mb-4">
-              When you use the extension to generate a reply, the extension reads the current conversation context from the page you are viewing:
+              When you activate the extension to generate a reply, it reads content from the page you are currently viewing:
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4 mb-4">
-              <li><strong className="text-white">LinkedIn:</strong> Participant name, headline, message history, and post content from the active LinkedIn conversation or thread.</li>
-              <li><strong className="text-white">Gmail:</strong> Sender name, subject, and email thread content from the active Gmail compose window or thread.</li>
+              <li><strong className="text-white">LinkedIn:</strong> Participant name, headline, message history, and post content from the active conversation or thread.</li>
+              <li><strong className="text-white">Gmail:</strong> Sender name, subject line, and email thread content from the active compose window or thread.</li>
             </ul>
-            <p>
-              This data is sent to your Phoenix API endpoint solely for the purpose of generating a contextual reply. Phoenix Pilot does not store this conversation data locally or transmit it to any third party.
+            <p className="mb-4">
+              This content is sent to the Phoenix API solely to generate a contextual reply. The extension does not store conversation content locally or on any server controlled by the extension developer.
             </p>
 
-            <h3 className="text-xl font-semibold text-white mb-3">3.3 Extension Settings</h3>
+            <h3 className="text-xl font-semibold text-white mb-3">2.2 Extension Settings</h3>
             <p className="mb-4">
-              The following settings are stored locally in your browser's Chrome storage:
+              The following settings are stored locally in your browser using Chrome's storage API:
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Your configured Phoenix API base URL</li>
-              <li>Your selected Phoenix session ID and name</li>
-              <li>Temporary session identifiers for stateless reply generation</li>
+              <li>Phoenix API base URL</li>
+              <li>Selected Phoenix session ID and name</li>
+              <li>Temporary session identifiers for reply generation</li>
             </ul>
             <p className="mt-4">
               These settings never leave your browser and are not transmitted to any external service.
@@ -92,54 +75,70 @@ export function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">4. How We Use Your Information</h2>
-            <p className="mb-4">The data processed by the extension is used exclusively for:</p>
+            <h2 className="text-2xl font-bold text-white mb-4">3. How We Use Your Data</h2>
+            <p className="mb-4">
+              Data accessed by the extension is used exclusively for:
+            </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>Generating contextual message replies via the Phoenix API</li>
               <li>Maintaining your authenticated session with the Phoenix API</li>
-              <li>Remembering your preferences between browser sessions</li>
+              <li>Remembering your extension preferences between browser sessions</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">5. Data Storage and Security</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">4. Data Transmission</h2>
             <p className="mb-4">
-              Phoenix Pilot stores only your extension settings locally in Chrome storage. Conversation data is processed ephemerally — it is read from the page, sent to your Phoenix API for reply generation, and is not persisted by the extension.
-            </p>
-            <p className="mb-4">
-              All communication between the extension and your Phoenix API is encrypted via HTTPS/TLS.
+              When you generate a reply, conversation content is transmitted to the Phoenix API at <code>https://api.phoenix0.online</code>. All communication is encrypted via HTTPS.
             </p>
             <p>
-              For details on how the Phoenix service stores and processes data, please refer to the Phoenix privacy policy.
+              The extension does not transmit any data to the extension developer or to any third party other than the Phoenix API.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">5. Data Storage</h2>
+            <p className="mb-4">
+              Phoenix Pilot does not operate its own servers. The extension stores only your settings locally in your browser. Conversation data is processed ephemerally — it is read from the page, sent to the Phoenix API for reply generation, and is not persisted by the extension.
+            </p>
+            <p>
+              For information on how the Phoenix service stores and processes your data, please refer to the Phoenix privacy policy.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">6. Third-Party Services</h2>
-            <p className="mb-4">Phoenix Pilot interacts with the following:</p>
+            <p className="mb-4">
+              Phoenix Pilot interacts with the following services:
+            </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li><strong className="text-white">Phoenix API:</strong> The Phoenix backend service for reply generation and session management. Data handling is governed by the Phoenix privacy policy.</li>
-              <li><strong className="text-white">LinkedIn:</strong> The extension reads conversation data from LinkedIn pages you visit. No data is written to or modified on LinkedIn.</li>
-              <li><strong className="text-white">Gmail:</strong> The extension reads email thread data from Gmail pages you visit. No data is written to or modified in Gmail.</li>
+              <li><strong className="text-white">Phoenix API (api.phoenix0.online):</strong> Used to generate AI-powered replies and manage sessions. Conversation content is sent to this service for processing.</li>
+              <li><strong className="text-white">LinkedIn:</strong> The extension reads conversation data from LinkedIn pages. No data is written to or modified on LinkedIn.</li>
+              <li><strong className="text-white">Gmail:</strong> The extension reads email thread data from Gmail pages. No data is written to or modified in Gmail.</li>
+              <li><strong className="text-white">Google Fonts:</strong> The extension loads the IBM Plex Sans font from Google Fonts for consistent typography in the injected UI.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">7. Permissions</h2>
-            <p className="mb-4">The extension requests the following Chrome permissions:</p>
+            <p className="mb-4">
+              The extension requests the following Chrome permissions:
+            </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li><strong className="text-white">storage:</strong> To save your extension settings locally.</li>
-              <li><strong className="text-white">activeTab:</strong> To read conversation context from the current tab when you activate the extension.</li>
-              <li><strong className="text-white">Host permissions (LinkedIn, Gmail, Phoenix API):</strong> To inject the reply assistant UI on LinkedIn and Gmail pages, and to communicate with your Phoenix API.</li>
+              <li><strong className="text-white">storage:</strong> Saves your extension settings locally in your browser.</li>
+              <li><strong className="text-white">activeTab:</strong> Reads conversation context from the current tab when you activate the extension.</li>
+              <li><strong className="text-white">Host permissions (LinkedIn, Gmail, Phoenix API):</strong> Injects the reply assistant UI on LinkedIn and Gmail pages, and communicates with the Phoenix API.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">8. Your Rights</h2>
-            <p className="mb-4">You have the right to:</p>
+            <p className="mb-4">
+              You can:
+            </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Clear all locally stored settings at any time via the extension's settings page or by removing the extension</li>
-              <li>Choose which Phoenix backend instance to connect to</li>
+              <li>Clear all locally stored settings via the extension's settings page or by removing the extension</li>
+              <li>Choose not to use the extension on pages containing sensitive content</li>
               <li>Revoke the extension's access by disabling or uninstalling it</li>
             </ul>
           </section>
@@ -147,21 +146,21 @@ export function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">9. Children's Privacy</h2>
             <p>
-              Our service is not intended for users under the age of 18. We do not knowingly collect personal information from children.
+              Phoenix Pilot is not intended for users under the age of 18. We do not knowingly collect personal information from children.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">10. Changes to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+              We may update this privacy policy from time to time. Changes will be posted on this page with an updated "Last updated" date.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">11. Contact Us</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
             <p>
-              If you have questions about this Privacy Policy, please open an issue on our <a href="https://github.com/arashbehmand/phoenix-pilot" className="text-phoenix-cyan hover:underline" target="_blank" rel="noopener noreferrer">GitHub repository</a>.
+              If you have questions about this privacy policy, please open an issue on our <a href="https://github.com/arashbehmand/phoenix-pilot" className="text-phoenix-cyan hover:underline" target="_blank" rel="noopener noreferrer">GitHub repository</a>.
             </p>
           </section>
         </motion.div>
@@ -170,4 +169,3 @@ export function PrivacyPolicyPage() {
     </div>
   );
 }
-
